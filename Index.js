@@ -2,33 +2,26 @@ const Botname = "Cr3sh4's bot";
 
 const Discord = require('discord.js');
 const client = new Discord.Client();
+//const queue = new Map();
 const ownerID = "294122131074318337";
 const ytdl = require('ytdl-core');
-//require('node-opus');
+require("./commands/stop.js");
 require('@discordjs/opus');
 require('ffmpeg-static');
 require('opusscript');
 const fs = require('fs');
 require('os');
 const config = require('./config.json');
-//const broadcast = client.voice.createBroadcast();
+const broadcast = client.voice.createBroadcast();
 const streamOptions = { seek: 0, volume: 1};
-//const getInfo = require('ytdl-getinfo');
-require('./music.js');
 var prompt = require("prompt");
-var prefix = 'J!';
-const broadcast = client.createVoiceBroadcast();
+var prefix = '@@';
 
 
-
-
-
-
-
-
-client.on('message', message => {
+client.on('message', msg => {
 
 });
+
 
 
 
@@ -42,8 +35,6 @@ console.log(`Logged in as ${client.user.tag}!`);
 client.user.setActivity(config.status, {type: 'PLAYING'});
 //client.user.setAvatar(config.avatar);
 process.stdin.setEncoding('utf8');
-
-
 
     
 
@@ -61,50 +52,32 @@ client.on('message', msg => {
         var getnamedmounth = date.getUTCMonth() + 1;
         var GetTime = ('[' + date.getFullYear() + '.' + getnamedmounth + '.' + date.getUTCDate() + ']' + '  (' + date.getHours() + ':' + date.getMinutes() + ':' + date.getSeconds() + '.' + date.getUTCMilliseconds() + ') - ');
       //  let args = msg.content.substring(prefix.length).split(" ");
-      //  let args = msg.content.substring(prefix.length).split(" ");
-        let args = msg.content.toLowerCase();
-        //  let cmd = args.shift().toLowerCase();
+        let args = msg.content.slice(prefix.length).trim().split(' ');
+        let cmd = args.shift().toLowerCase();
         var musicurl = {};
         var lasturl = 0;
-        var TimeCreateFile = 0;
-        var servers = {};
-        //Queue system vars
-        const queue = new Map();
-        const serverQueue = queue.get(msg.guild.id);
-       // const voiceChannel = msg.member.voiceChannel;
-       // var connection = msg.member.voice.channel.join();
-
-     function CreateTimeFile(){
-        fs.appendFile('TimeUsersList.txt', 'var ' +  + '\r', function (err) {
-            if (err) throw err;
-          });
-     }
-
-      function TimeInChannel(){
-        fs.appendFile();
-      }
-        
-        
+      //  let connection = msg.member.voice.channel.join();
       if (msg.author.bot) {
         return;
         }
+        
 
 
 
 
 
-    if (msg.content.toLowerCase().startsWith('botstop')) {
-        if (msg.member.permissions.has('ADMINISTRATOR')) {
-            msg.reply('Disabled')
-                console.log('Пользователь ', msg.author.tag + " отключил бота в канале " + msg.channel.name);
-                fs.appendFile('LOGS.txt',GetTime + msg.author.tag + " ввёл комманду STOP в канале " + msg.channel.name + '\r', function (err) {
-                    if (err) throw err;
-                  });
-            setTimeout(function () { client.destroy(); }, 1000)
-            
-return 0; 
-        }
+
+
+
+
+    let ChtMsg = msg.content;
+    let ChatMsg = ChtMsg.toLowerCase();
+    if (msg.channel.id === 685063276950061066) {
+        msg.channel.send("Channel id = " + msg.channel.id);
     }
+    
+    
+    
 
 
 
@@ -113,10 +86,8 @@ return 0;
 
 
 
+  
 
- //   if(command === "ping") {
- //       msg.channel.send(Math.round(client.ping) + "ms")
-  //    }
 
 
     if (msg.content == ('flip')) {
@@ -138,38 +109,6 @@ return 0;
               });
         } 
     }
-
-
-        if(msg.content === '1'){
-            
-        }
-    
-
-
-    if (msg.content.startsWith('pinfo')){
-        msg.reply('start');
-        let exampleEmbed = new Discord.MessageEmbed()
-	.setColor('#5309FF')
-    .setAuthor(msg.author.username, msg.author.displayAvatarURL())
-  //  .setImage(getavatarurl())
-	//.setDescription(msg.author.)
-	.addFields(
-		{ name: '', value: 'Some value here' },
-		{ name: '\u200B', value: '\u200B' },
-		{ name: 'Inline field title', value: 'Some value here', inline: true },
-		{ name: 'Inline field title', value: 'Some value here', inline: true },
-	)
-	.addField('Inline field title', 'Some value here', true)
-	.setTimestamp()
-
-msg.channel.send(exampleEmbed);
-       // CreateTimeFile();
-        msg.reply('end');
-
-    }
-    
-
-
   
        //var test = prompt("Тест", '');
   //  msg.content.startsWith(httpstart.startsWith('http')); 
@@ -258,55 +197,35 @@ msg.channel.send(exampleEmbed);
           dispatcher.on("end", function(){
                   play(musiclink) },)
                 } */
-     /*           var link = `https://www.youtube.com/watch?v=crtJzci5XL4`;
-                    function play(musiclink) {
-                    play(ytdl (link, { filter: 'audioonly' }));
-                    
-                  }
 
-         if (msg.channel.id === `690712642100265011`) {
+  //              async function play(connection, musiclink) {
+  //                  connection.play(await ytdl(musiclink), { type: 'opus' });
+ //                 }
+
+  /*        if (msg.channel.id === `690712642100265011`) {
           if (msg.content.startsWith('http')) {
             let musiclink = `${msg}`;
             msg.reply(musiclink);
-             msg.member.voiceChannel.join();
+           //  msg.member.voice.connection.join();
           //  ytdl(`https://www.youtube.com/watch?v=VWxjcQjHA7o` , { filter : 'audioonly' });
             
-            var ss = ytdl.validateURL(musiclink);
-            msg.channel.send(ss);
-
-           // play(musiclink);
-            msg.channel.send('ytdl ok');
+            play(connection, musiclink);
+            msg.channel.send('ytdl defined');
             
             
           }
           else {
             msg.delete();
-          //  msg.channel.send('Msg removed');
-        }}  */
+            msg.channel.send('Msg removed');
+        }} */
         
 
-        if(msg.content === 'add'){
-           msg.member.guild.roles.find(role => role.id === '474709011204276264');
-           
-        }
 
 
 
 
-        if (msg.content === 'sg') {
-            let exampleEmbed = new Discord.RichEmbed()
-            .setColor('#5309FF')
-            .setAuthor(msg.author.username, msg.author.displayAvatarURL)
-          //  .setImage(getavatarurl())
-            //.setDescription(msg.author.)
-            .addField('Current playing:', 'HJFDHJJDSHKJHKFSDJHKFSD', true)
-            .addField('Track by: ', msg.author.tag)
-            .setImage('https://www.youtube.com/watch?v=0J2QdDbelmY')
-            .setTimestamp()
-        
-            
-        msg.channel.send(exampleEmbed);
-        }
+
+
 
 
 
@@ -362,167 +281,34 @@ msg.channel.send(exampleEmbed);
             } */
          
       
-            
+
    /*   if (msg.content === 'mus') {
         play();
       }*/
 
 
 
-      
-      if (msg.content.startsWith('http')) {
+if (msg.content === 'yee') {
+      if (msg.member.voice.channel === true) {
+        msg.member.voice.channel.join()
+            .then(connection => {
+                msg.reply('ok');
+                var dispatcher = connection.play('./Remix.mp3')
+
+                dispatcher.on('end', () => {});
+
+                dispatcher.on('error', e => {
+                    console.log(e);
+                });
+
+            })
+            .catch(console.log);
+    } else {
+        msg.reply('...');
+    }
+}
 
 
-
-        function play(connection, msg){
-          var server = servers[msg.guild.id];
-          
-          server.dispatcher = connection.playStream(ytdl(server.queue[0], { filter : 'audioonly'}));
-
-          server.queue.shift();
-
-          server.dispatcher.on("end", function(){
-            if(server.queue[0]){
-              play(connection, msg);
-            }
-            else {
-              connection.disconnect();
-              console.log('5');
-              console.error();
-              
-            }
-          });
-
-        }
-
-        //  if (!args[1]){
-       //     msg.channel.send('Я нічого не бачу!');
-       //     return;
-       //   }
-
-          if(!msg.member.voiceChannel) {
-            msg.channel.send('Вы не в голосовом канале!');
-          }
-
-          if (!servers[msg.guild.id]) servers[msg.guild.id] = {
-            queue: []
-          }
-          console.log('1');
-
-          var server = servers[msg.guild.id];
-
-          console.log('2');
-
-          server.queue.push(args);
-
-          console.log('3');
-
-          if (!msg.guild.voiceConnection) msg.member.voiceChannel.join().then(function(connection)
-          {
-            play(connection, msg);
-            console.log('4');
-          })
-
-
-
-
-
-
-
-      }
-
-        
-
-
-
-     
-
-
-
-
-
-
-
-
-
-
-
-      if(msg.channel.id === '690712642100265011') {
-        if (msg.content.toLowerCase().startsWith('disco')){
-          msg.member.voiceChannel.leave();
-          msg.channel.send('Disconnected! @' + msg.author.tag);
-        }
-        var musiclink = `${msg}`;
-        var validateURL = ytdl.validateURL(musiclink);
-        if (validateURL === true) {
-          var verifedmusiclink = `${musiclink}`
-
-
-          
-
-
-
-
-        }
-        if (validateURL === false){
-          msg.reply('Ссылка не валидная');
-        }
-
- 
-    //  if (msg.content.startsWith('https')) {
-        
-        if (validateURL === false) {
-            msg.delete();
-            return;
-        }}
-
-
-
-         // var stream = ytdl(verifedmusiclink, { filter : 'audioonly' });
-         // var dispatcher = serverQueue.connection.playStream(ytdl(song.url, { filter : 'audioonly'})) //stream, streamOptions
-        //    .on('start', () => {
-         //   msg.channel.send(`Current playing: \n` + verifedmusiclink);
-         //   console.log('Current playing: ' + verifedmusiclink);
-        
-              //   let exampleEmbed = new Discord.RichEmbed()
-               //  .setColor('#5309FF')
-               //  .setAuthor(msg.author.username, msg.author.displayAvatarURL)
-               //  .setImage(getavatarurl())
-                 //.setDescription(msg.author.)
-               //  .addField('Current playing:', '', true)
-               //  .addField('Track by: ', msg.author.tag)
-               //  .addField(`${musiclink}`)
-                 //.setImage('https://i.forfun.com/k00nvqei.jpeg')
-                // .setTimestamp()
-             
-            // msg.channel.send(exampleEmbed);
-       //   })
-        
-        
-        //  .on('end', () => {
-        //    console.log('Музыка закончилась');
-        //    serverQueue.songs.shift();
-        //    play(guild, serverQueue.songs[0]);
-        //  })
-        
-        
-        
-        
-               
-
-
-
-
-
-                if (msg.content.toLowerCase().startsWith('disco')){
-                    msg.member.voiceChannel.leave();
-                }
-
-
-
-                if (msg.content.toLowerCase().startsWith('join')){
-                  msg.member.voiceChannel.join();
-                }
 
 
 
@@ -530,17 +316,6 @@ msg.channel.send(exampleEmbed);
 
 
 })
-
-
-
-
-
-
-
-
-
-
-
 
 
 /*

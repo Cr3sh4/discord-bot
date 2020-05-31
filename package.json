@@ -1,0 +1,23 @@
+{
+  "name": "cr3sh4bot",
+  "version": "1.0.0",
+  "description": "yep",
+  "main": "Index.js",
+  "dependencies": {
+    "@discordjs/opus": "^0.1.0",
+    "discord.js": "^12.1.1",
+    "ffmpeg-static": "^4.2.2",
+    "opusscript": "0.0.7",
+    "prompt": "^1.0.0",
+    "ytdl-core": "^2.0.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Cr3sh4",
+  "license": "ISC",
+  "keywords": [
+    "bot"
+  ]
+}
