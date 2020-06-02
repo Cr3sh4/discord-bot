@@ -5,7 +5,6 @@ const client = new Discord.Client();
 //const queue = new Map();
 const ownerID = "294122131074318337";
 const ytdl = require('ytdl-core');
-require("./commands/stop.js");
 require('@discordjs/opus');
 require('ffmpeg-static');
 require('opusscript');
@@ -43,11 +42,7 @@ process.stdin.setEncoding('utf8');
 
 client.on('message', msg => {
     
-    function randomnum() {
-        var rand = Math.floor(Math.random() * 2);
-        return rand;
-     }    
-        var randnum = randomnum();   
+
         var date = new Date();
         var getnamedmounth = date.getUTCMonth() + 1;
         var GetTime = ('[' + date.getFullYear() + '.' + getnamedmounth + '.' + date.getUTCDate() + ']' + '  (' + date.getHours() + ':' + date.getMinutes() + ':' + date.getSeconds() + '.' + date.getUTCMilliseconds() + ') - ');
@@ -60,6 +55,39 @@ client.on('message', msg => {
       if (msg.author.bot) {
         return;
         }
+        let ChtMsg = msg.content;
+        let ChatMsg = ChtMsg.toLowerCase();
+        
+
+        //Инициализация функций начало
+
+
+        function randomnum() {
+            var rand = Math.floor(Math.random() * 2);
+            return rand;
+         }    
+            var randnum = randomnum();   
+
+
+
+            function botstop() {
+                {
+                    if (msg.member.permissions.has('ADMINISTRATOR')) {
+                        msg.reply('Stop command init')
+                            console.log('Пользователь ', msg.author.tag + " отключил бота в канале " + msg.channel.name);
+                            fs.appendFile('LOGS.txt',GetTime + msg.author.tag + " ввёл комманду STOP в канале " + msg.channel.name + '\r', function (err) {
+                                if (err) throw err;
+                              });
+                        setTimeout(function () { client.destroy(); }, 1000)
+                        
+                return 0; 
+                    }
+                    }
+                }
+
+
+
+
         
 
 
@@ -67,14 +95,30 @@ client.on('message', msg => {
 
 
 
+        //Инициализация функций конец
 
 
 
-    let ChtMsg = msg.content;
-    let ChatMsg = ChtMsg.toLowerCase();
+
     if (msg.channel.id === 685063276950061066) {
         msg.channel.send("Channel id = " + msg.channel.id);
     }
+   
+   
+    switch (ChatMsg) {
+        case 'stop':
+            msg.channel.send('stop init');
+            if (msg.member.permissions.has('ADMINISTRATOR')) {
+                botstop();
+            }
+            
+        break;
+
+        default:
+            msg.channel.send('Команда не найдена');
+            break;
+    }
+
     
     
     
