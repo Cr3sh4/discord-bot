@@ -2,7 +2,7 @@ const Botname = "mmhero bot";
 
 const Discord = require('discord.js');
 const client = new Discord.Client();
-client.music = require("discord.js-musicbot-addon");
+//client.music = require("discord.js-musicbot-addon");
 
 
 const ownerID = "294122131074318337";
@@ -45,7 +45,7 @@ process.stdin.setEncoding('utf8');
 
 
 
-client.music.start(client, {
+/*client.music.start(client, {
     // Set the api key used for YouTube.
     youtubeKey: "AIzaSyCm1jwx_9JZcOQdsIsbkdQzN6cLquQKoS8",
   
@@ -72,8 +72,7 @@ client.music.start(client, {
     }
    
   });
-  console.log("STARTED");
-
+ */
     
 //:bar_chart: All Members: 000/750
 //:chart_with_upwards_trend:Voice Online:
