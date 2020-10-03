@@ -36,6 +36,9 @@ var prefix = '@@';
 client.on('ready', () => {
 console.log(`Logged in as ${client.user.tag}!`);
 
+
+
+
 client.user.setActivity(config.status, {type: 'PLAYING'});
 //client.user.setAvatar(config.avatar);
 process.stdin.setEncoding('utf8');
@@ -98,21 +101,35 @@ const updateMemberCount = guild => {
 client.on('guildMemberAdd', (member) => updateMemberCount(member.guild));
 client.on("guildMemberRemove", (member) => updateMemberCount(member.guild));
 client.on('voiceStateUpdate', (oldMember, newMember) => {
-
     var VoiceOnlineCount = "754009450171334768";
-
     var setVoiceChannelName = client.channels.cache.get(VoiceOnlineCount);
-
-    const voiceChannels = client.channels.cache.filter(c => c.type === 'voice');
+ const voiceChannels = client.channels.cache.filter(c => c.type === 'voice');
  var CountInVoiceChannels = 0;
 
  for (const [id, voiceChannel] of voiceChannels) CountInVoiceChannels += voiceChannel.members.size;
 
- setVoiceChannelName.setName("📈Voice Online: " + CountInVoiceChannels);   
+ setVoiceChannelName.setName("📈Voice Online: " + CountInVoiceChannels);  
+ 
+if (newMember.id == '294122131074318337' || newMember.id == '252431644684713985')
+if (newMember.mute == true)
+{
+{
+    newMember.setMute(false);
+}}
+
+
+
+ 
  
 
-console.log("User id: " + newMember + " joined/leave");
+//console.log("User id: " + newMember.member.user.tag + " state update");
 })
+
+
+
+
+
+
 
 client.voice.connections.find()
 
@@ -164,6 +181,7 @@ client.on('message', async msg => {
         var lasturl = 0;
         var servers = {};
         let tomute = msg.guild.members.cache.get(args[0]);
+       
        // const suffix = msg.content.substring(musicbot.botPrefix.length + command.length).trim();
 
 
@@ -219,19 +237,68 @@ client.on('message', async msg => {
 
      
     
-     
+ let kanal = msg.member.voice.channel;
      
     
 
 
-     if (msg.content.startsWith('https') || msg.content.startsWith('http')) 
+     if (msg.content.startsWith('~unm')) 
      {
-        client.music.bot.playFunction(msg, args);
+        console.log('unm init');
         
-        
-     }
+        for (let member of kanal.members) 
+        {
+        // if (member[1].user.id == '294122131074318337') 
+      //   {
+            console.log('FINDED!');
+            console.log( member[1].guild.member());
+            msg.guild.members.cache.forEach(member => { //Loop every user
+                if(member.voice.channel){//Is user in voicechannel and is user the command executer
+                    member.voice.setChannel('372068121898385418')//Sets user to channel
+                }});
+        // }
+               
+        }
+    }
     
+
+     
+    if (ChatMsg == '~join')
+    {
+        msg.member.voice.channel.join();
+    }
+
+
+
     
+
+
+
+
+
+    if (ChatMsg == '~tpall' || ChatMsg == '~here') //tpall
+    {
+
+        msg.guild.members.cache.forEach(member => 
+            {
+            if (member.voice.channel && msg.member.permissions.has('MOVE_MEMBERS')) 
+                {
+                var channelid = msg.member.voice.channel.id;
+                member.voice.setChannel(channelid);
+                }
+                else 
+                {
+                    console.log("User " + msg.author.tag + " writen ~tpall without permissions");
+                    return;
+                }
+            });
+    }
+
+   
+
+
+
+
     
 
 
@@ -864,5 +931,7 @@ client.on('message', async msg => {
 } */
 
 client.login(config.token);
+
+
 
 
