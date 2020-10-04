@@ -173,6 +173,7 @@ client.on('message', async msg => {
       //  let args = msg.content.substring(prefix.length).split(" ");
         let args = msg.content.split(' ');
         let cmd = args.shift().toLowerCase();
+       
         
         const ytdl = require('ytdl-core');
         var queue = {};
@@ -275,23 +276,7 @@ client.on('message', async msg => {
 
 
 
-    if (ChatMsg == '~tpall' || ChatMsg == '~here') //tpall
-    {
-
-        msg.guild.members.cache.forEach(member => 
-            {
-            if (member.voice.channel && msg.member.permissions.has('MOVE_MEMBERS')) 
-                {
-                var channelid = msg.member.voice.channel.id;
-                member.voice.setChannel(channelid);
-                }
-                else 
-                {
-                    console.log("User " + msg.author.tag + " writen ~tpall without permissions");
-                    return;
-                }
-            });
-    }
+   
 
    
 
@@ -341,6 +326,13 @@ client.on('message', async msg => {
         }
      }
 
+     function ClientStop() {
+         console.log("User " + msg.author.tag + " stopped bot task!");
+         process.exit();
+     }
+
+     
+
 
 
      //   const channel = client.channels.cache.get(AllMembersCount)
@@ -349,13 +341,20 @@ client.on('message', async msg => {
 
 
 
+    
 
+
+     if (ChatMsg.startsWith('~avatar')) 
+     {
+        if (!mention)
+        {
+            msg.channel.send('Using: ~avatar + @user'); 
+            return;
+        }
+        msg.channel.send(mention.avatarURL({ format: "png", dynamic: true }));
+     }
 
     
-    function ClientStop() {
-        console.log("User " + msg.author.tag + " stopped bot task!");
-        process.exit();
-    }
     
 
 
@@ -439,7 +438,8 @@ client.on('message', async msg => {
    if (msg.guild.member(mention).client.user.id == "294122131074318337")  return;
    if (!msg.guild.member(mention).kickable) {msg.channel.send("`Этого пользователя невозможно кикнуть`"); return;}
     let reason = msg.content.slice (mention.toString.length + 29);
-    
+    if (reason == '') {reason = 'Причина не указана'} 
+    console.log(mention + "забанен по причине: " + reason);
     let kick_embed = new Discord.MessageEmbed()
     .setColor('#ff121e')
     .setTitle("Enterprise Squad")
@@ -487,7 +487,8 @@ client.on('message', async msg => {
       if (msg.guild.member(mention).client.user.id == "294122131074318337")  return;
       if (!msg.guild.member(mention).kickable) {msg.channel.send("`Этого пользователя невозможно забанить`"); return;}
       let reason = msg.content.slice (mention.toString().length + 6);
-      console.log(reason);
+      console.log(mention + "забанен по причине: " + reason);
+      if (reason == '') {reason = 'Причина не указана'}
         
 
       let ban_embed = new Discord.MessageEmbed()
@@ -510,6 +511,19 @@ client.on('message', async msg => {
     }
     
     
+    if (ChatMsg == '~tpall' || ChatMsg == '~here') //tpall
+    {
+
+        msg.guild.members.cache.forEach(member => 
+            {
+            if (member.voice.channel && msg.member.permissions.has('MOVE_MEMBERS')) 
+                {
+                var channelid = msg.member.voice.channel.id;
+                member.voice.setChannel(channelid);
+                }
+                
+            });
+    }
 
 
 
@@ -529,10 +543,11 @@ client.on('message', async msg => {
 
 
 // || "+help" || "+invite" || "+prices" || "+buy" || "+refund" || "+bid" || "+check" || "+daily" || "+verify" || "+level"
-    var MuteRole = msg.guild.roles.cache.find(role => role.name === "Muted");
+   
     
     if (msg.content == "+info")
     {
+        var MuteRole = msg.guild.roles.cache.find(role => role.name === "Muted");
       //  msg.delete();
        // msg.member.roles.add(MuteRole);
         console.log(msg.author.tag + " был замучен");
