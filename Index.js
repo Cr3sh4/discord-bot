@@ -1,24 +1,34 @@
 const Botname = "mmhero bot";
 
 const Discord = require('discord.js');
+const mc = require('minecraft-server-util')
+const color = require('colors');
+const ytdl = require('ytdl-core');
 const client = new Discord.Client();
+const fs = require('fs');
+var opusscript = require('opusscript');
+var servers = {};
+const broadcast = client.voice.createBroadcast();
+
 //client.music = require("discord.js-musicbot-addon");
 
 
 const ownerID = "294122131074318337";
 
 
-const fs = require('fs');
 require('os');
 
 const config = require('./config.json');
 const { info } = require('console');
 const { send } = require('process');
-const broadcast = client.voice.createBroadcast();
+const { fileURLToPath } = require('url');
+const { setTimeout } = require('timers');
+const { connect } = require('http2');
+
 const streamOptions = { seek: 0, volume: 1};
 
 
-var prefix = '@@';
+
 
 
 
@@ -34,7 +44,7 @@ var prefix = '@@';
 
 
 client.on('ready', () => {
-console.log(`Logged in as ${client.user.tag}!`);
+console.log(`Logged in as ${client.user.tag}!`.rainbow);
 
 
 
@@ -110,16 +120,13 @@ client.on('voiceStateUpdate', (oldMember, newMember) => {
  setVoiceChannelName.setName("📈Voice Online: " + CountInVoiceChannels);  
  
 if (newMember.id == '294122131074318337' || newMember.id == '252431644684713985')
-if (newMember.mute == true)
 {
+if (newMember.mute == true)
+
 {
     newMember.setMute(false);
 }}
 
-
-
- 
- 
 
 //console.log("User id: " + newMember.member.user.tag + " state update");
 })
@@ -174,13 +181,22 @@ client.on('message', async msg => {
         let args = msg.content.split(' ');
         let cmd = args.shift().toLowerCase();
        
-        
-        const ytdl = require('ytdl-core');
+        if (msg.channel.type == "dm")
+    {
+      if (msg.content == "~dm"){
+      //msg.author.send('кто прочитал тот здохнет');
+      //client.users.cache.get("252431644684713985").send("кто прочитал тот здохнет");
+      console.log(client.users.cache.get('252431644684713985').fetch());
+      }
+    }
+
+      if (msg.channel.type == 'dm') return;
         var queue = {};
         var musicurl = {};
         var lasturl = 0;
         var servers = {};
         let tomute = msg.guild.members.cache.get(args[0]);
+        
        
        // const suffix = msg.content.substring(musicbot.botPrefix.length + command.length).trim();
 
@@ -192,7 +208,7 @@ client.on('message', async msg => {
         var uptime_month;
 
         
-        var mention = msg.mentions.users.first();
+        let mention = msg.mentions.users.first();
         var AllMembersCount = "752539273034465291";
         var VoiceOnlineCount = "754009450171334768";
         var BoostersCount = "751876552110899231";
@@ -239,8 +255,8 @@ client.on('message', async msg => {
     
  let kanal = msg.member.voice.channel;
      
-    
-
+ 
+ 
 
      if (msg.content.startsWith('~unm')) 
      {
@@ -261,18 +277,22 @@ client.on('message', async msg => {
         }
     }
     
+      if (ChatMsg.startsWith(''))
+    
 
      
     if (ChatMsg == '~join')
     {
-        msg.member.voice.channel.join();
+      if (!msg.member.voiceChannel) return;
+      msg.member.voice.channel.join();
+        console.log(msg.author.tag + " init command ~join");
     }
-
-
 
     
 
+    
 
+    
 
 
 
@@ -311,24 +331,26 @@ client.on('message', async msg => {
 
 
  
-     function InviteLinkCheck() //delete invite links
-     {
-         console.log("InviteLinkCheck Init");
-        if (msg.channel.id == "391022771800375298") return;
-    else 
-        {
-                msg.reply("Server invite's are not allowed! Use #self-promotion channel.")
-               .then(msg => {
-                 msg.delete({ timeout: 10000});
-             })
-                    .catch(console.error());
-                msg.delete();
-        }
+     function InviteLinkCheck() {
+       //delete invite links
+       console.log("InviteLinkCheck Init");
+       if (msg.channel.id == "391022771800375298") return;
+       else {
+         msg
+           .reply(
+             "Server invite's are not allowed! Use #self-promotion channel."
+           )
+           .then((msg) => {
+             msg.delete({ timeout: 10000 });
+           })
+           .catch(console.error());
+         msg.delete();
+       }
      }
 
      function ClientStop() {
-         console.log("User " + msg.author.tag + " stopped bot task!");
-         process.exit();
+       console.log("User " + msg.author.tag + " stopped bot task!");
+       process.exit();
      }
 
      
@@ -344,16 +366,53 @@ client.on('message', async msg => {
     
 
 
-     if (ChatMsg.startsWith('~avatar')) 
-     {
-        if (!mention)
-        {
-            msg.channel.send('Using: ~avatar + @user'); 
-            return;
-        }
-        msg.channel.send(mention.avatarURL({ format: "png", dynamic: true }));
-     }
+    if (ChatMsg.startsWith("~avatar")) 
+    {
+      if (!mention) {
+        msg.channel.send("Using: ~avatar + @user");
+        return;
+      }
+      msg.channel.send(mention.avatarURL({ format: "png", dynamic: true }));
+      console.log(msg.author.tag + " init command " + msg.content);
+    }
 
+
+    if (ChatMsg.startsWith("~p ") || ChatMsg.startsWith("~play"))
+    {
+      console.log(args[0]);
+     
+      
+      if (ytdl.validateURL(args[0]) == false)
+      {
+        msg.reply("Invalid link or args");  
+      }
+      else 
+      {
+        if(msg.member.voice.channel == false)
+        {
+          msg.channel.send("User isn't in voice channel")
+          .then((msg) => {
+            msg.delete({ timeout: 10000 });
+          })
+          .catch(console.error());
+          return;
+        }
+
+        if (!servers[msg.guild.id]) servers[msg.guild.id] = {
+          queue: []
+        };
+
+
+        var server = servers[msg.guild.id];
+        if (!msg.guild.voice.connection) msg.member.voice.channel.join();
+        broadcast.play('');
+         
+        
+        
+
+      }
+
+    }
     
     
 
@@ -376,15 +435,14 @@ client.on('message', async msg => {
             }
 
 
-            if (FoundInText) 
-            {
-                msg.delete();
-                console.log(msg.author.tag + " написал слово из blacklist");
-                msg.reply('That word is blacklisted!').then(msg => { 
-                    msg.delete({ timeout: 10000});
-                    
+            if (FoundInText) {
+              msg.delete();
+              console.log(msg.author.tag + " написал слово из blacklist");
+              msg.reply("That word is blacklisted!")
+                .then((msg) => {
+                  msg.delete({ timeout: 10000 });
                 })
-                       .catch(console.error());
+                .catch(console.error());
             }
             
             
@@ -399,130 +457,173 @@ client.on('message', async msg => {
 
 
 
-            if (ChatMsg == '~Blacklist') 
-        {
-            if (!msg.author.dmChannel) return;
-            msg.author.send('```css\n Blacklisted words: \n' + DenyList + '```');
-            
-        }
+            if (ChatMsg == "~Blacklist") {
+              if (!msg.author.dmChannel) return;
+              msg.author.send(
+                "```css\n Blacklisted words: \n" + DenyList + "```"
+              );
+              console.log(msg.author.tag + " init command ~blacklist " + msg.content);
+            }
 
 
 
         
         
 
-  if (ChatMsg.startsWith("~kick")) 
-  {
-      
-  if (!msg.member.hasPermission("KICK_MEMBERS"))
-  {
-    msg.delete();
-    msg.channel.send("У вас нет прав для использования данной комманды!").then(msg => { 
-      msg.delete({ timeout: 10000});
-      
-  })
-         .catch(console.error());
-         return;
-}
-  if (mention == null) 
-  {
+  if (ChatMsg.startsWith("~kick")) {
+    if (!msg.member.hasPermission("KICK_MEMBERS")) {
       msg.delete();
-      msg.channel.send("Пользователь не указан!").then(msg => { 
-        msg.delete({ timeout: 10000});
-        
-    })
-           .catch(console.error());
-           return;
-  }
-   // if (msg.guild.member(mention).hasPermission("ADMINISTRATOR")) return;
-   if (msg.guild.member(mention).client.user.id == "294122131074318337")  return;
-   if (!msg.guild.member(mention).kickable) {msg.channel.send("`Этого пользователя невозможно кикнуть`"); return;}
-    let reason = msg.content.slice (mention.toString.length + 29);
-    if (reason == '') {reason = 'Причина не указана'} 
-    console.log(mention + "забанен по причине: " + reason);
+      msg.channel
+        .send("У вас нет прав для использования данной комманды!")
+        .then((msg) => {
+          msg.delete({ timeout: 10000 });
+        })
+        .catch(console.error());
+      return;
+    }
+    if (mention == null) {
+      msg.delete();
+      msg.channel
+        .send("Пользователь не указан!")
+        .then((msg) => {
+          msg.delete({ timeout: 10000 });
+        })
+        .catch(console.error());
+      return;
+    }
+    // if (msg.guild.member(mention).hasPermission("ADMINISTRATOR")) return;
+    if (msg.guild.member(mention).client.user.id == "294122131074318337")
+      return;
+    if (!msg.guild.member(mention).kickable) {
+      msg.channel.send("`Этого пользователя невозможно кикнуть`");
+      return;
+    }
+    let reason = msg.content.slice(mention.toString.length + 29);
+    if (reason == "") {
+      reason = "Причина не указана";
+    }
+    console.log(mention + " забанен по причине: " + reason);
     let kick_embed = new Discord.MessageEmbed()
-    .setColor('#ff121e')
-    .setTitle("Enterprise Squad")
-    .setThumbnail(mention.avatarURL())
-    .addField("Пользователь: ", `${mention.username + "#" + mention.discriminator}`)
-    .addField("Кикнут модератором: ", `${msg.author.tag}`)
-    .addField("По причине:", `${reason}`, true)
-   // .addField("Забанен до %%", '2', true)
-    .setFooter("Enterprise Squad", "https://cdn.discordapp.com/attachments/685063276950061066/754501359658860625/234331.gif")
-    .setTimestamp()
-
-    console.log(reason);
-    try {
-    msg.guild.member(mention).kick(reason);
-    //msg.channel.send(msg.author.tag + " kicked " + mention.username + " from server")
-    msg.channel.send(kick_embed);
-    msg.delete();
-   
-    
-    }
-    catch {
-        msg.channel.send("`Ошибка, подробности в консоли...`" + console.error());
-    }}
-
-
-
-
-
-
-
-    if(ChatMsg.startsWith(`~ban`)) //ban command
-    {
-      if (!msg.member.hasPermission("BAN_MEMBERS")) return;
-      if (mention == null)
-      {
-        msg.delete();
-        msg.channel.send("Пользователь не указан!").then(msg => { 
-          msg.delete({ timeout: 10000});
-          
-      })
-             .catch(console.error());
-             return;
-    }
-     // if (msg.guild.member(mention).hasPermission("ADMINISTRATOR")) return;
-      if (msg.guild.member(mention).client.user.id == "294122131074318337")  return;
-      if (!msg.guild.member(mention).kickable) {msg.channel.send("`Этого пользователя невозможно забанить`"); return;}
-      let reason = msg.content.slice (mention.toString().length + 6);
-      console.log(mention + "забанен по причине: " + reason);
-      if (reason == '') {reason = 'Причина не указана'}
-        
-
-      let ban_embed = new Discord.MessageEmbed()
-      .setColor('#ff121e')
+      .setColor("#ff121e")
       .setTitle("Enterprise Squad")
       .setThumbnail(mention.avatarURL())
-      .addField("Пользователь: ", `${mention.username + "#" + mention.discriminator}`)
-      .addField("Забанен модератором: ", `${msg.author.tag}`)
+      .addField(
+        "Пользователь: ",
+        `${mention.username + "#" + mention.discriminator}`
+      )
+      .addField("Кикнут модератором: ", `${msg.author.tag}`)
       .addField("По причине:", `${reason}`, true)
-     // .addField("Забанен до %%", '2', true)
-      .setFooter("Enterprise Squad", "https://cdn.discordapp.com/attachments/685063276950061066/754501359658860625/234331.gif")
-      .setTimestamp()
+      // .addField("Забанен до %%", '2', true)
+      .setFooter(
+        "Enterprise Squad",
+        "https://cdn.discordapp.com/attachments/685063276950061066/754501359658860625/234331.gif"
+      )
+      .setTimestamp();
+
+    console.log(reason);
+    console.log(msg.author.tag + " init command ~kick " + msg.content);
+    try {
+      msg.guild.member(mention).kick(reason);
+      //msg.channel.send(msg.author.tag + " kicked " + mention.username + " from server")
+      msg.channel.send(kick_embed);
+      msg.delete();
+    } catch {
+      msg.channel.send("`Ошибка, подробности в консоли...`" + console.error());
+    }
+  }
 
 
-      msg.guild.member(mention).ban(reason);
-      msg.channel.send(ban_embed)
-    
+  if (ChatMsg.startsWith('~tag') && msg.member.hasPermission('ADMINISTRATOR'))
+  {
+    let tag_count = msg.content.slice(mention.toString().length + 7);
+        if (Number.isInteger(tag_count)) 
+    {
+    console.log(tag_count);
+    console.log("User " + msg.author.tag + " TAGGED " + mention.username);
+
+    }
+        if (!Number.isInteger(tag_count))
+          {
+            msg.channel.send("Введите количество в цифрах!");
+          }
+  }
+  
+
+
+
+
+    if (ChatMsg.startsWith(`~ban`)) {
+      //ban command
+      if (!msg.member.hasPermission("BAN_MEMBERS")) return;
       
+      if (mention == null) {
+        msg.delete();
+        let reason = msg.content.slice(mention.toString.length + 6);
+        console.log("Message: " + msg.content);
+        console.log("User: " + mention);
+        console.log("Reason: " + reason);
+        msg.channel
+          .send("Пользователь не указан!")
+          .then((msg) => {
+            msg.delete({ timeout: 10000 });
+          })
+          .catch(console.error());
+        return;
+      }
+      // if (msg.guild.member(mention).hasPermission("ADMINISTRATOR")) return;
+      if (msg.guild.member(mention).client.user.id == "294122131074318337")
+        return;
+      if (!msg.guild.member(mention).bannable) {
+        msg.channel.send("`Этого пользователя невозможно забанить`");
+        return;
+      }
+      let reason = msg.content.slice(mention.toString().length + 6);
+      console.log(msg.author.tag + " init command ~ban " + msg.content);
+      if (reason == "") {
+        reason = "Причина не указана";
+      }
+
+      let ban_embed = new Discord.MessageEmbed()
+        .setColor("#ff121e")
+        .setTitle("Enterprise Squad")
+        .setThumbnail(mention.avatarURL())
+        .addField(
+          "Пользователь: ",
+          `${mention.username + "#" + mention.discriminator}`
+        )
+        .addField("Забанен модератором: ", `${msg.author.tag}`)
+        .addField("По причине:", `${reason}`, true)
+        // .addField("Забанен до %%", '2', true)
+        .setFooter(
+          "Enterprise Squad",
+          "https://cdn.discordapp.com/attachments/685063276950061066/754501359658860625/234331.gif"
+        )
+        .setTimestamp();
+        console.log("Message: " + msg.content);
+        console.log("User: " + mention);
+        console.log("Reason: " + reason);
+      try {msg.guild.member(mention).ban(reason)}
+      catch {
+        msg.channel.send("Комманда не была выполнена :( Подробности в консоли");
+        return;
+      }
       
+      msg.channel.send(ban_embed);
     }
     
     
-    if (ChatMsg == '~tpall' || ChatMsg == '~here') //tpall
-    {
-
-        msg.guild.members.cache.forEach(member => 
-            {
-            if (member.voice.channel && msg.member.permissions.has('MOVE_MEMBERS')) 
-                {
-                var channelid = msg.member.voice.channel.id;
-                member.voice.setChannel(channelid);
-                }
-                
-            });
+    if (ChatMsg == "~tpall" || ChatMsg == "~here") {
+      //tpall
+      msg.guild.members.cache.forEach((member) => {
+        if (
+          member.voice.channel &&
+          msg.member.permissions.has("MOVE_MEMBERS")
+        ) {
+          var channelid = msg.member.voice.channel.id;
+          member.voice.setChannel(channelid);
+        }
+      });
+      console.log(msg.author.tag + " init command ~tpall " + msg.content);
     }
 
 
@@ -573,19 +674,145 @@ client.on('message', async msg => {
         })
                .catch(console.error());
            msg.delete();
-        
+           console.log(msg.author.tag + " init command ~uptime " + msg.content);
     }
 
 
     if (ChatMsg == '~ping') {
-        msg.channel.send(date.toLocaleTimeString());
+        msg.channel.send(msg.author.id);
+    }
+    let serverstatus;
+    let serverstatuscolor = '#fffff';
+   // let playerlist;
+
+    function getplayerlist()
+    {
+      mc.queryFull('riomc.cf')
+    .then((response) => {
+        let players = response.players.toString();
+        //console.log(response.players);
+       // console.log(response);
+        playerlist = response.players;
+        //serverstatus = "enabled";
+        console.log("RESPONE OK".green);
+        console.log("Playerlist in function: " + playerlist + "".green);
+        return playerlist;
+    })
+    .catch((error) => {
+        serverstatus = "disabled";
+        console.log("status: disabled".red);
+        return serverstatus;
+        throw error;
+    });
     }
 
 
 
+    function getserverstatus()
+    {
+      mc.query('riomc.cf')
+    .then((response) => {
+        //console.log(response);
+        serverstatus = "enabled";
+        serverstatuscolor = '#00ff00';
+        //console.log("status: enabled");
+        return serverstatus;
+    })
+    .catch((error) => {
+        serverstatus = "disabled";
+        serverstatuscolor = '#FF4D00';
+        console.log("status: disabled".red);
+        fs.appendFile('LOGS.txt',GetTime + ' MONITORING NULL RESPONE ' + '\r', function (err) {
+          if (err) throw err;
+        });
+        return serverstatus;
+        throw error;
+    });
+    }
+
+    if (ChatMsg == "~s")
+    {
+     // getplayerlist();
+    }
+ //riomc.cf
+ if (ChatMsg == '~t') 
+ {
+ console.log("Playerlist out func: " + playerlist + "".rainbow);
+ }
+    function monitoring()
+    {
+
+      //var monitoringmsg = await msg.channel.send("one");
+      
+      mc.status('riomc.cf') // port is default 25565
+    .then((response) => {
+      
+      
+      //  console.log("JSON: " + json + "");
+      //  console.log("Players name: " + playersname + "");
+        
+       // var playerslistjson = response.samplePlayers;
+       // const playername = playerslistjson[playerslistjson.length - 1];
+       // const arrayplayers = playerslistjson.length;
+        //var playersdata = JSON.parse(playerslistjson);
+        msg.channel.messages.fetch('776825828696522772').then(newmsg=>{newmsg.edit(new Discord.MessageEmbed()
+          //.setDescription("Java: riomc.cf\nBedrock: riomc.cf:26665\n Status: " + serverstatus +"\nOnline map: riomc.cf:25577")
+          .setAuthor("Rio-MC 1.16.3")
+          .setColor(serverstatuscolor)
+          //.setColor('#00ff00')
+          //.setTitle(`Online players: ${response.onlinePlayers}/${response.maxPlayers}\n`) 
+          .addField('Online players: ', response.onlinePlayers + "/" + response.maxPlayers) 
+          .addField("Java:", "riomc.cf")
+          .addField("Bedrock:", "riomc.cf:26665")
+          .addField("Online map:", "riomc.cf:25577")
+          .addField("Status:", serverstatus)
+          .setFooter("Rio-MC OPEN BETA") // , footer img
+          .setThumbnail("https://media3.giphy.com/media/FVVpS4yRrAL7y/200.gif")
+          )})
+          
+          /*let json = response.samplePlayers;
+      let playersname;
+      for(let i = 0;i<json[i];i++)
+        playersname+=`${json[i].name} `
+          */
+         // console.log(playersname);
+          
+        //console.log(response.samplePlayers);
+        
+       //console.log("Playerlist in respone func : " + playerlist + "".rainbow);
+        //console.log(playername);
+       // msg.channel.send(playername.name);
+    })
+    .catch((error) => {
+      console.log("Something error on monitoring".red);
+        throw error;
+    });
+    //console.log(respone);
+    }
 
 
+    if (msg.content.startsWith('~enablemon'))
+    {   
+      setInterval(getserverstatus, 30000);
+      setInterval(monitoring, 10000);
+      
+      
+      // .addField("Забанен до %%", '2', true)
+      
+     
 
+      //msg.channel.send("lul");
+      
+
+
+      
+      //setInterval(monitoring, 2000);
+
+      
+      
+    }
+    
+  //  774735794895716362
 
    
 
@@ -593,9 +820,25 @@ client.on('message', async msg => {
 
 
     
-       
+       if (ChatMsg == "~say")
+       {
         
-    
+       // msg.channel.send("Minecraft");
+       }
+        
+       if (ChatMsg == "~err")
+       {
+         console.log("error sample".red);
+       }
+       if (ChatMsg == "~warn")
+       {
+         console.log("warn sample".yellow);
+       }
+       if (ChatMsg == "~inf")
+       {
+         console.log("info sample".white);
+       }
+       
 
 
     
