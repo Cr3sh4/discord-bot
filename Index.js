@@ -43,8 +43,13 @@ const streamOptions = { seek: 0, volume: 1};
 
 
 
+
+
+
 client.on('ready', () => {
-console.log(`Logged in as ${client.user.tag}!`.rainbow);
+  console.log(`Logged in as ${client.user.tag}!`.rainbow);
+  var IsMonitoringEnabled = 0;
+  
 
 
 
@@ -353,6 +358,10 @@ client.on('message', async msg => {
        process.exit();
      }
 
+     function getRandomInt(max) {
+      return Math.floor(Math.random() * Math.floor(max));
+    }
+
      
 
 
@@ -369,10 +378,17 @@ client.on('message', async msg => {
     if (ChatMsg.startsWith("~avatar")) 
     {
       if (!mention) {
-        msg.channel.send("Using: ~avatar + @user");
-        return;
+        msg.channel.send("Using: ~avatar + @user").then(msg => {
+                msg.delete({ timeout: 10000});
+				return;
+            })
+                   .catch(console.error());
+        
       }
-      msg.channel.send(mention.avatarURL({ format: "png", dynamic: true }));
+      msg.channel.send(mention.avatarURL({ format: "png", dynamic: true })).then(msg => {
+                msg.delete({ timeout: 60000});
+            })
+                   .catch(console.error());
       console.log(msg.author.tag + " init command " + msg.content);
     }
 
@@ -712,9 +728,15 @@ client.on('message', async msg => {
     {
       mc.query('riomc.cf')
     .then((response) => {
-        //console.log(response);
+      if (response.onlinePlayers >= 1)
+      {
         serverstatus = "enabled";
         serverstatuscolor = '#00ff00';
+        return serverstatus, serverstatuscolor;
+
+      }
+      serverstatus = "enabled";
+        //console.log(response);
         //console.log("status: enabled");
         return serverstatus;
     })
@@ -730,10 +752,7 @@ client.on('message', async msg => {
     });
     }
 
-    if (ChatMsg == "~s")
-    {
-     // getplayerlist();
-    }
+    
  //riomc.cf
  if (ChatMsg == '~t') 
  {
@@ -790,27 +809,45 @@ client.on('message', async msg => {
     //console.log(respone);
     }
 
+    
+    function MonEnable() 
+    {
+    
+      
+      if (msg.content != null)
+      {   
+          if (IsMonitoringEnabled == undefined)
+          {
 
-    if (msg.content.startsWith('~enablemon'))
-    {   
-      setInterval(getserverstatus, 30000);
-      setInterval(monitoring, 10000);
-      
-      
-      // .addField("Забанен до %%", '2', true)
-      
-     
+        setInterval(getserverstatus, 30000);
+        setInterval(monitoring, 10000);
 
-      //msg.channel.send("lul");
-      
+        var IsMonitoringEnabled = 1;
+
+        console.log("Monitoring is enabled now!".green);
+        console.log("[DOWN]IsMonitoringEnabled = " +  + IsMonitoringEnabled);
+        
+       return IsMonitoringEnabled;
+          }
 
 
-      
-      //setInterval(monitoring, 2000);
+          else
+              {
+            msg.reply("Alredy enabled").then(msg => {
+              msg.delete({ timeout: 10000});return;})
+                 .catch(console.error());
+              }
+        }
 
-      
-      
+          else {
+            console.log("FUCK ON MONITORING ACTIVATOR".red);
+          }
+
+
     }
+
+    
+  
     
   //  774735794895716362
 
@@ -820,11 +857,7 @@ client.on('message', async msg => {
 
 
     
-       if (ChatMsg == "~say")
-       {
-        
-       // msg.channel.send("Minecraft");
-       }
+      
         
        if (ChatMsg == "~err")
        {
@@ -907,6 +940,33 @@ client.on('message', async msg => {
     }
 
 
+    if (ChatMsg.startsWith('~roll'))
+    {
+      if (!args[0])
+      {
+        var random_ = getRandomInt(100);
+        console.log(msg.author.tag + " roll: " + random_);
+        msg.reply(random_).then(msg => {
+          msg.delete({ timeout: 10000});
+  return;
+      })
+             .catch(console.error());
+  
+
+      }
+      if (args[0] >= 0)
+      {
+        var userinput = args[0];
+        var random_ = getRandomInt(userinput);
+        console.log(msg.author.tag + " roll: " + random_);
+        msg.reply(random_).then(msg => {
+          msg.delete({ timeout: 10000});
+  return;
+      })
+             .catch(console.error());
+      }
+    }
+
 
 
    
@@ -918,12 +978,6 @@ client.on('message', async msg => {
 
 
 
-if (msg.content.startsWith('r')) {
- // console.log(client.channels.cache.get(msg.member.guild.id)); 
-    console.log('ok');
-    console.log(msg.content);
-    console.log(msg.content.trim());
-}
 
 
 
