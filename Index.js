@@ -7,6 +7,7 @@ const ytdl = require('ytdl-core');
 const client = new Discord.Client();
 const fs = require('fs');
 var opusscript = require('opusscript');
+const MusicBot = require('discord-music-system');
 var servers = {};
 const broadcast = client.voice.createBroadcast();
 
@@ -158,7 +159,12 @@ client.voice.connections.find()
 
 
 
-
+//AIzaSyD_yvZEZQOkEMxxEg-3e7U5exBYv1UZzyI
+const bot = new MusicBot({
+  botPrefix: '~', // Example: !
+  ytApiKey: 'AIzaSyCcVLEpsJC9z95Err0qIJ_wqwZGLkQgOKQ', // Video to explain how to get it: https://www.youtube.com/watch?v=VqML5F8hcRQ
+  botClient: client // Your Discord client. Here we're using discord.js so it's the Discord.Client()
+});
 
 
 
@@ -282,20 +288,49 @@ client.on('message', async msg => {
         }
     }
     
-      if (ChatMsg.startsWith(''))
+      
+    if(msg.content.startsWith(bot.prefix)) { // If the message starts with your prefix
+      bot.onMessage(msg); // The music-system must read the message, to check if it is a music command and execute it.
+  };
     
 
-     
+     /*
     if (ChatMsg == '~join')
     {
-      if (!msg.member.voiceChannel) return;
-      msg.member.voice.channel.join();
+      if (msg.member.voice.channel.joinable)
+      {
+        msg.member.voice.channel.join();
+      }
+      else {
+        console.log("Join failed".red);
+        msg.reply("Failed!").then(msg => {
+          msg.delete({ timeout: 10000});
+  return;
+      })
+             .catch(console.error());
+      }
         console.log(msg.author.tag + " init command ~join");
     }
 
+    if (ChatMsg == '~leave')
+    {
+      try
+      {
+        msg.member.voice.channel.leave();
+      }
+      catch
+      {
+        msg.reply("Already disconnected!").then(msg => {
+          msg.delete({ timeout: 10000});
+  return;
+      })
+             .catch(console.error());
+        return;
+      }
+    }
     
 
-    
+    */
 
     
 
@@ -393,7 +428,7 @@ client.on('message', async msg => {
     }
 
 
-    if (ChatMsg.startsWith("~p ") || ChatMsg.startsWith("~play"))
+ /*   if (ChatMsg.startsWith("~p ") || ChatMsg.startsWith("~play"))
     {
       console.log(args[0]);
      
@@ -428,7 +463,7 @@ client.on('message', async msg => {
 
       }
 
-    }
+    } */
     
     
 
@@ -695,7 +730,10 @@ client.on('message', async msg => {
 
 
     if (ChatMsg == '~ping') {
-        msg.channel.send(msg.author.id);
+        var ping = Date.now() - msg.createdTimestamp + " ms";
+        msg.channel.send("Your ping is `" + `${Date.now() - msg.createdTimestamp}` + "` ms");
+    
+      
     }
     let serverstatus;
     let serverstatuscolor = '#fffff';
@@ -894,7 +932,7 @@ client.on('message', async msg => {
     
 
 
-    if (ChatMsg == ("~stop"))  //stop command
+    if (ChatMsg == "~disable" || ChatMsg == "~off" || ChatMsg == "~shutdown")  //stop command
     {
         if (msg.member.hasPermission("ADMINISTRATOR"))
         {
@@ -930,7 +968,11 @@ client.on('message', async msg => {
 
         }
         if (randnum === 1) {
-            msg.reply('Решка');
+            msg.reply('Решка').then(msg => {
+              msg.delete({ timeout: 10000});
+      return;
+          })
+                 .catch(console.error());
             console.log( msg.author.tag + ' ввёл команду FLIP в комнате ' + msg.channel.name + ' выпала РЕШКА');
         //    fs.appendFile('LOGS.txt', msg.author.tag + ' ввёл команду FLIP в комнате ' + msg.channel.name + ' выпала РЕШКА');
             fs.appendFile('LOGS.txt',GetTime + msg.author.tag + ' ввёл комманду FLIP в комнате ' + msg.channel.name + ' выпала РЕШКА' + '\r', function (err) {
