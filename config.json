@@ -1,0 +1,7 @@
+{
+	"ownerID": "ADMIN ID",
+	"token":"BOT SECRET",
+  "prefix":"BOT PREFIX",
+  "botname":"BOT NAME",
+  "status":"CUSTOM STATUS"
+}
