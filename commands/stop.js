@@ -1,14 +1,27 @@
-function botstop() {
-{
-    if (msg.member.permissions.has('ADMINISTRATOR')) {
-        msg.reply('Bot stop')
-            console.log('Пользователь ', msg.author.tag + " отключил бота в канале " + msg.channel.name);
-            fs.appendFile('LOGS.txt',GetTime + msg.author.tag + " ввёл комманду STOP в канале " + msg.channel.name + '\r', function (err) {
+module.exports = {
+    name: 'stop',
+    description: 'close node app',
+    execute(msg)
+    {
+        function ClientStop() {
+            console.log("User " + msg.author.tag + " stopped bot task!");
+            process.exit();
+          }
+
+        if (msg.member.hasPermission("ADMINISTRATOR"))
+        {
+        
+            msg.reply("Stopped!").then(msg => {
+                msg.delete({ timeout: 1000});
+            })
+                   .catch(console.error());
+               msg.delete();
+               client.user.setStatus('dnd');
+            fs.appendFile('LOGS.txt',GetTime + msg.author.tag + ' ввёл комманду STOP в комнате ' + msg.channel.name  + '\r', function (err) {
                 if (err) throw err;
               });
-        setTimeout(function () { client.destroy(); }, 1000)
-        
-return 0; 
-    }
+              setTimeout(ClientStop, 2000);
+            
+        }
     }
 }
