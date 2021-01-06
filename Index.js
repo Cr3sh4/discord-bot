@@ -2,14 +2,10 @@ const Botname = "mmhero bot";
 
 const Discord = require('discord.js');
 const mc = require('minecraft-server-util')
-const axios = require('axios')
-const http = require('http')
-const https = require('https');
 const request = require('request');
 const color = require('colors');
 const client = new Discord.Client();
 const fs = require('fs');
-var servers = {};
 
 require('os');
 
@@ -186,6 +182,7 @@ client.on('message', async msg => {
         if (msg.author.bot || !msg.content.startsWith(config.prefix)) return;
         let ChatMsg = msg.content.toLowerCase();
 
+        
 
 
 
@@ -385,16 +382,19 @@ client.on('message', async msg => {
           //command.meme
           else if (command === 'meme') 
           {
-                 
-            request('http://alpha-meme-maker.herokuapp.com', { json: true }, (err, res, body) => 
-            {
-              if (err) { return console.log(err); }
-              console.log(body.data[0].image);
-              //console.log(body.explanation);
-              msg.channel.send({files: [body.data[0].image]});
-          });
+            fs.readdir(config.memes_dir, (err, files) => {
+              const random_meme = Math.floor(Math.random() * files.length);
+              console.log(msg.author.username + " meme command: " + random_meme);
+              try
+              {
+              msg.channel.send({files: [`${config.memes_dir}/meme (${random_meme}).jpg`]});
+              }
+              catch(err)
+              {
+                console.log(err);
+              }
 
-
+            });
             return;
           }
           //command.ping
@@ -545,7 +545,7 @@ client.on('message', async msg => {
           }
           else if (command == 'getmemes' && msg.author.id == config.ownerID)
           {
-            
+
 
             console.log("end!");
           }
