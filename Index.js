@@ -2,6 +2,7 @@ const Botname = "mmhero bot";
 
 const Discord = require('discord.js');
 const mc = require('minecraft-server-util')
+const mysql = require('mysql');
 const request = require('request');
 const color = require('colors');
 const client = new Discord.Client();
@@ -23,18 +24,29 @@ const { setTimeout } = require('timers');
 
 
 
+var con;
 
+//if (config.logs.enabled == true)
+//{
+  var con = mysql.createConnection({
+    host: config.logs.host,
+    user: config.logs.user,
+    password: config.logs.password,
+    database: config.logs.database
+  });
 
-
-
+//}
+//else {
+//  console.log("LOGS INIT ERROR".yellow);
+//}
 
 
 
 
 client.on('ready', () => {
-  console.log(`Logged in as ${client.user.tag}!`.rainbow);
-  var IsMonitoringEnabled = 0;
-  
+  console.log(`Logged in as ${client.user.tag}!`.green);
+  const Guilds = client.guilds.cache.map(guild => guild.id);
+ //   console.log(Guilds);
 
 
 
@@ -45,43 +57,24 @@ process.stdin.setEncoding('utf8');
 
 
 
-/*client.music.start(client, {
-    // Set the api key used for YouTube.
-    youtubeKey: "AIzaSyCm1jwx_9JZcOQdsIsbkdQzN6cLquQKoS8",
-  
-    // The PLAY command Object.
-    play: {
-      // Usage text for the help command.
-      usage: "~",
-      // Whether or not to exclude the command from the help command.
-      exclude: false  
-    },
-  
-    // Make it so anyone in the voice channel can skip the
-    // currently playing song.
-    anyoneCanSkip: true,
-  
-    // Make it so the owner (you) bypass permissions for music.
-    ownerOverMember: true,
-    ownerID: "294122131074318337",
-  
-    // The cooldown Object.
-    cooldown: {
-      // This disables the cooldown. Not recommended.
-      enabled: false
-    }
-   
-  });
- */
-    
-//:bar_chart: All Members: 000/750
-//:chart_with_upwards_trend:Voice Online:
-//:rocket: Nitro Boosters
+
 
 
 
 });
 
+var sql = `INSERT INTO ${config.logs.table} (command) VALUES ('Ready')`;
+con.connect(function(err) {
+  if (err) throw err;
+  console.log("Connected to database!".gray);
+ 
+  
+
+});
+con.query(sql, function (err, result) {
+  if (err) throw err;
+  console.log("1 record inserted");
+});
 
 
 
@@ -183,8 +176,21 @@ client.on('message', async msg => {
         let ChatMsg = msg.content.toLowerCase();
 
         
-
-
+        /*
+        CREATE TABLE `jma_db`.`table_name` 
+        ( `id` INT(14) NOT NULL AUTO_INCREMENT ,
+         `time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ,
+          `guild_id` INT(18) NOT NULL ,
+           `guild_name` INT(100) NOT NULL ,
+            `channel_id` INT(18) NOT NULL ,
+             `channel_name` INT(100) NOT NULL ,
+              `user_id` INT(18) NOT NULL ,
+               `user_name` INT(32) NOT NULL ,
+                `command` INT(256) NOT NULL ,
+                 `args` INT(256) NOT NULL ,
+                  `full_message` INT(256) NOT NULL ,
+                   PRIMARY KEY (`id`)) ENGINE = InnoDB; 
+        */
 
         
         //command.avatar
@@ -199,7 +205,15 @@ client.on('message', async msg => {
                   }
                   else 
                   {
+                    var sql = `INSERT INTO ${config.logs.table} (guild_id, guild_name, channel_id, channel_name, user_id, user_name, command, args, full_message) VALUES (${msg.guild.id}, '${msg.guild.name}', ${msg.channel.id}, '${msg.channel.name}', ${msg.author.id}, '${msg.author.username}', '${command}', '${JSON.stringify(args)}', '${msg.content}')`;
+                      con.query(sql, function (err, result) {
+                        if (err) throw err;
+                        console.log("1 record inserted".gray);
+                      });
+
                   msg.channel.send(mention.avatarURL({ format: "png", dynamic: true })).then(msg => {
+                    
+
                             msg.delete({ timeout: 60000});
                         })
                               .catch(console.error());
@@ -257,7 +271,16 @@ client.on('message', async msg => {
                         console.log("Message: " + msg.content);
                         console.log("User: " + mention);
                         console.log("Reason: " + reason);
-                      try {msg.guild.member(mention).ban(reason)}
+                      try {
+                        msg.guild.member(mention).ban(reason)
+
+                        var sql = `INSERT INTO ${config.logs.table} (guild_id, guild_name, channel_id, channel_name, user_id, user_name, command, args, full_message) VALUES (${msg.guild.id}, '${msg.guild.name}', ${msg.channel.id}, '${msg.channel.name}', ${msg.author.id}, '${msg.author.username}', '${command}', '${JSON.stringify(args)}', '${msg.content}')`;
+                        con.query(sql, function (err, result) {
+                          if (err) throw err;
+                          console.log("1 record inserted".gray);
+                        });
+                        
+                      }
                       catch {
                         msg.channel.send("Комманда не была выполнена :( Подробности в консоли");
                         return;
@@ -278,9 +301,12 @@ client.on('message', async msg => {
             if (randnum === 0) {
                 msg.reply('Орёл');
                 console.log( msg.author.tag + ' ввёл команду FLIP в комнате ' + msg.channel.name + ' выпал ОРЁЛ');  
-                fs.appendFile('LOGS.txt',GetTime + msg.author.tag + ' ввёл комманду FLIP в комнате ' + msg.channel.name + ' выпал ОРЁЛ' + '\r', function (err) {
-                    if (err) throw err;
-                  });
+                
+                var sql = `INSERT INTO ${config.logs.table} (guild_id, guild_name, channel_id, channel_name, user_id, user_name, command, args, full_message, bot_response) VALUES (${msg.guild.id}, '${msg.guild.name}', ${msg.channel.id}, '${msg.channel.name}', ${msg.author.id}, '${msg.author.username}', '${command}', '${JSON.stringify(args)}', '${msg.content}', 'Орёл')`;
+                con.query(sql, function (err, result) {
+                  if (err) throw err;
+                  console.log("1 record inserted".gray);
+                });
     
             }
             if (randnum === 1) {
@@ -290,9 +316,12 @@ client.on('message', async msg => {
               })
                      .catch(console.error());
                 console.log( msg.author.tag + ' ввёл команду FLIP в комнате ' + msg.channel.name + ' выпала РЕШКА');
-                fs.appendFile('LOGS.txt',GetTime + msg.author.tag + ' ввёл комманду FLIP в комнате ' + msg.channel.name + ' выпала РЕШКА' + '\r', function (err) {
-                    if (err) throw err;
-                  });
+               
+                var sql = `INSERT INTO ${config.logs.table} (guild_id, guild_name, channel_id, channel_name, user_id, user_name, command, args, full_message, bot_response) VALUES (${msg.guild.id}, '${msg.guild.name}', ${msg.channel.id}, '${msg.channel.name}', ${msg.author.id}, '${msg.author.username}', '${command}', '${JSON.stringify(args)}', '${msg.content}', 'Решка')`;
+                con.query(sql, function (err, result) {
+                  if (err) throw err;
+                  console.log("1 record inserted".gray);
+                });
             }  
           }
           //command.here || command.tpall
@@ -309,12 +338,24 @@ client.on('message', async msg => {
                     }
                   });
                   console.log(msg.author.tag + " init command ~tpall " + msg.content);
+
+                  var sql = `INSERT INTO ${config.logs.table} (guild_id, guild_name, channel_id, channel_name, user_id, user_name, command, args, full_message) VALUES (${msg.guild.id}, '${msg.guild.name}', ${msg.channel.id}, '${msg.channel.name}', ${msg.author.id}, '${msg.author.username}', '${command}', '${JSON.stringify(args)}', '${msg.content}')`;
+                  con.query(sql, function (err, result) {
+                    if (err) throw err;
+                    console.log("1 record inserted".gray);
+                  });
+
           }
           //command.join
           else if (command === 'join') 
           {
                   msg.member.voice.channel.join();
                   console.log(msg.author.tag + " init command ~join");
+                  var sql = `INSERT INTO ${config.logs.table} (guild_id, guild_name, channel_id, channel_name, user_id, user_name, command, args, full_message) VALUES (${msg.guild.id}, '${msg.guild.name}', ${msg.channel.id}, '${msg.channel.name}', ${msg.author.id}, '${msg.author.username}', '${command}', '${JSON.stringify(args)}', '${msg.content}')`;
+                con.query(sql, function (err, result) {
+                  if (err) throw err;
+                  console.log("1 record inserted".gray);
+                });
           }
           //command.kick
           else if (command === 'kick') 
@@ -374,7 +415,14 @@ client.on('message', async msg => {
                     msg.guild.member(mention).kick(reason);
                     //msg.channel.send(msg.author.tag + " kicked " + mention.username + " from server")
                     msg.channel.send(kick_embed);
-                    msg.delete();
+
+                    var sql = `INSERT INTO ${config.logs.table} (guild_id, guild_name, channel_id, channel_name, user_id, user_name, command, args, full_message) VALUES (${msg.guild.id}, '${msg.guild.name}', ${msg.channel.id}, '${msg.channel.name}', ${msg.author.id}, '${msg.author.username}', '${command}', '${JSON.stringify(args)}', '${msg.content}')`;
+                    con.query(sql, function (err, result) {
+                      if (err) throw err;
+                      console.log("1 record inserted".gray);
+                    });
+
+                    //msg.delete();
                   } catch {
                     msg.channel.send("`Ошибка, подробности в консоли...`" + console.error());
                   }
@@ -387,7 +435,14 @@ client.on('message', async msg => {
               console.log(msg.author.username + " meme command: " + random_meme);
               try
               {
-              msg.channel.send({files: [`${config.memes_dir}/meme (${random_meme}).jpg`]});
+                
+                var sql = `INSERT INTO ${config.logs.table} (guild_id, guild_name, channel_id, channel_name, user_id, user_name, command, args, full_message, bot_response) VALUES (${msg.guild.id}, '${msg.guild.name}', ${msg.channel.id}, '${msg.channel.name}', ${msg.author.id}, '${msg.author.username}', '${command}', '${JSON.stringify(args)}', '${msg.content}', pic.${random_meme})`;
+                con.query(sql, function (err, result) {
+                  if (err) throw err;
+                  console.log("1 record inserted".gray);
+                });
+                
+                msg.channel.send("pic." + random_meme + {files: [`${config.memes_dir}/meme (${random_meme}).jpg`]});
               }
               catch(err)
               {
@@ -399,8 +454,15 @@ client.on('message', async msg => {
           }
           //command.ping
           else if (command === 'ping') 
-          {
-                  var ping = Date.now() - msg.createdTimestamp + " ms";
+          { 
+            var ping = Date.now() - msg.createdTimestamp + " ms";
+
+                var sql = `INSERT INTO ${config.logs.table} (guild_id, guild_name, channel_id, channel_name, user_id, user_name, command, args, full_message, bot_response) VALUES (${msg.guild.id}, '${msg.guild.name}', ${msg.channel.id}, '${msg.channel.name}', ${msg.author.id}, '${msg.author.username}', '${command}', '${JSON.stringify(args)}', '${msg.content}', 'Your ping is ${Date.now() - msg.createdTimestamp}')`;
+                con.query(sql, function (err, result) {
+                  if (err) throw err;
+                  console.log("1 record inserted".gray);
+                });
+
                   msg.channel.send("Your ping is `" + `${Date.now() - msg.createdTimestamp}` + "` ms");
           }
           //command.restart
@@ -412,6 +474,13 @@ client.on('message', async msg => {
               {
                   client.destroy()
                   client.login(config.token);
+
+                  var sql = `INSERT INTO ${config.logs.table} (guild_id, guild_name, channel_id, channel_name, user_id, user_name, command, args, full_message) VALUES (${msg.guild.id}, '${msg.guild.name}', ${msg.channel.id}, '${msg.channel.name}', ${msg.author.id}, '${msg.author.username}', '${command}', '${JSON.stringify(args)}', '${msg.content}')`;
+                  con.query(sql, function (err, result) {
+                    if (err) throw err;
+                    console.log("1 record inserted".gray);
+                  });
+
                   msg.reply("Sucessfully restarted!".green);
                   console.log(msg.author.tag + " init bot restart!");
               }
@@ -432,6 +501,13 @@ client.on('message', async msg => {
                     if (!args[0]) {
                       var random_ = getRandomInt(100);
                       console.log(msg.author.tag + " roll: " + random_);
+
+                      var sql = `INSERT INTO ${config.logs.table} (guild_id, guild_name, channel_id, channel_name, user_id, user_name, command, args, full_message, bot_response) VALUES (${msg.guild.id}, '${msg.guild.name}', ${msg.channel.id}, '${msg.channel.name}', ${msg.author.id}, '${msg.author.username}', '${command}', '${JSON.stringify(args)}', '${msg.content}', '${random_}')`;
+                      con.query(sql, function (err, result) {
+                        if (err) throw err;
+                        console.log("1 record inserted".gray);
+                      });
+
                       msg.reply(random_)
                         .then((msg) => {
                           msg.delete({ timeout: 10000 });
@@ -444,6 +520,11 @@ client.on('message', async msg => {
                       var userinput = args[0];
                       var random_ = getRandomInt(userinput);
                       console.log(msg.author.tag + " roll: " + random_);
+                      var sql = `INSERT INTO ${config.logs.table} (guild_id, guild_name, channel_id, channel_name, user_id, user_name, command, args, full_message, bot_response) VALUES (${msg.guild.id}, '${msg.guild.name}', ${msg.channel.id}, '${msg.channel.name}', ${msg.author.id}, '${msg.author.username}', '${command}', '${JSON.stringify(args)}', '${msg.content}', '${random_}')`;
+                      con.query(sql, function (err, result) {
+                        if (err) throw err;
+                        console.log("1 record inserted".gray);
+                      });
                       msg.reply(random_)
                         .then((msg) => {
                           msg.delete({ timeout: 10000 });
@@ -456,23 +537,35 @@ client.on('message', async msg => {
           else if (command === 'stop') 
           {
                 function ClientStop() {
-                  console.log("User " + msg.author.tag + " stopped bot task!");
+                  console.log("User " + msg.author.tag + " stopped bot task!".red);
                   process.exit();
                 }
       
-              if (msg.author.id == config.ownerID)
+              if (msg.author.id == config.ownerID || msg.author.id == '252431644684713985')
               {
-              
+                
                   msg.reply("Stopped!").then(msg => {
                       msg.delete({ timeout: 1000});
                   })
                         .catch(console.error());
                     msg.delete();
                     client.user.setStatus('dnd');
-                  fs.appendFile('LOGS.txt',GetTime + msg.author.tag + ' ввёл комманду STOP в комнате ' + msg.channel.name  + '\r', function (err) {
+
+                  /*  con.connect(function(err) {
                       if (err) throw err;
-                    });
-                    setTimeout(ClientStop, 2000);
+                      console.log("Write shutdown to database!".green);
+                      
+                      
+                      
+                    }); */
+                    var sql = `INSERT INTO ${config.logs.table} (command, bot_response) VALUES ('Shutdown', 'Stopped!')`;
+                      con.query(sql, function (err, result) {
+                        if (err) throw err;
+                        console.log("1 record inserted".gray);
+                      });
+
+                      setTimeout(ClientStop, 2000);
+                  
                   
               }
           }
@@ -497,6 +590,11 @@ client.on('message', async msg => {
                           member.voice.setChannel(args[0])//Sets user to channel
                       }});
               // }
+              var sql = `INSERT INTO ${config.logs.table} (guild_id, guild_name, channel_id, channel_name, user_id, user_name, command, args, full_message) VALUES (${msg.guild.id}, '${msg.guild.name}', ${msg.channel.id}, '${msg.channel.name}', ${msg.author.id}, '${msg.author.username}', '${command}', '${JSON.stringify(args)}', '${msg.content}')`;
+              con.query(sql, function (err, result) {
+                if (err) throw err;
+                console.log("1 record inserted".gray);
+              });
                       
               }
             }
@@ -509,7 +607,7 @@ client.on('message', async msg => {
           //command.uptime
           else if (command === 'uptime') 
           {
-                    var uptime_sec;
+                var uptime_sec;
                 var uptime_min;
                 var uptime_hours;
                 var uptime_days;
@@ -534,7 +632,12 @@ client.on('message', async msg => {
                         return days + " Days"
                     }
                   }
-
+            
+                  var sql = `INSERT INTO ${config.logs.table} (guild_id, guild_name, channel_id, channel_name, user_id, user_name, command, args, full_message, bot_response) VALUES (${msg.guild.id}, '${msg.guild.name}', ${msg.channel.id}, '${msg.channel.name}', ${msg.author.id}, '${msg.author.username}', '${command}', '${JSON.stringify(args)}', '${msg.content}', 'Current uptime: ${msToTime(client.uptime)}')`;
+                  con.query(sql, function (err, result) {
+                    if (err) throw err;
+                    console.log("1 record inserted".gray);
+                  });
                   
             msg.channel.send("```c\nCurrent uptime: " + msToTime(client.uptime) + " \n```").then(msg => { 
                 msg.delete({ timeout: 10000});
@@ -543,9 +646,10 @@ client.on('message', async msg => {
               msg.delete();
               console.log(msg.author.tag + " init command ~uptime " + msg.content);
           }
-          else if (command == 'getmemes' && msg.author.id == config.ownerID)
+          else if (command == 'alo' && msg.author.id == config.ownerID)
           {
-
+            //console.log(`${msg.guild.id}', '${msg.guild.name}', '${msg.channel.id}', '${msg.channel.name}', '${msg.author.id}', '${msg.author.username}', '${command}', '${args}', '${msg.content}`);
+           
 
             console.log("end!");
           }
