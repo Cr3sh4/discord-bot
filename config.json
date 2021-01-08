@@ -7,7 +7,7 @@
     "botname": "JMA",
     "status": "cr3sh4.dev",
     "logs": {
-        "enabled": false,
+        "enabled": 1,
         "host": "localhost",
         "port": "3306",
         "user": "root",

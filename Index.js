@@ -218,7 +218,7 @@ client.on('message', async msg => {
                         console.log("1 record inserted".gray);
                       });
                     }
-                    else
+                    else {}
 
                   msg.channel.send(mention.avatarURL({ format: "png", dynamic: true })).then(msg => {
                     
@@ -753,6 +753,7 @@ client.on('message', async msg => {
                   console.log("1 record inserted".gray);
                 });
               }
+              else {}
               msg.channel.send("Looped!").then((msg) => {
                 msg.delete({ timeout: 10000 });
                 return;
@@ -772,6 +773,7 @@ client.on('message', async msg => {
                   console.log("1 record inserted".gray);
                 });
               }
+              else {}
               msg.channel.send("Loop is disabled").then((msg) => {
                 msg.delete({ timeout: 10000 });
                 return;
@@ -793,6 +795,7 @@ client.on('message', async msg => {
                   console.log("1 record inserted".gray);
                 });
               }
+              else {}
           }
           else if (command == 'pause')
           {
@@ -808,6 +811,7 @@ client.on('message', async msg => {
                   console.log("1 record inserted".gray);
                 });
               }
+              else {}
             }
             else {
               msg.channel.send('No songs are currently playing');
@@ -819,6 +823,7 @@ client.on('message', async msg => {
                   console.log("1 record inserted".gray);
                 });
               }
+              else {}
             }
             
           }
@@ -835,6 +840,7 @@ client.on('message', async msg => {
                   console.log("1 record inserted".gray);
                 });
               }
+              else {}
             }
             else
             {
@@ -847,6 +853,7 @@ client.on('message', async msg => {
                   console.log("1 record inserted".gray);
                 });
               }
+              else {}
             }
           }
           else if (command == 'leave')
@@ -860,6 +867,7 @@ client.on('message', async msg => {
                 console.log("1 record inserted".gray);
               });
             }
+            else {}
           }
           else if (command == 'effect')
           {
@@ -874,6 +882,7 @@ client.on('message', async msg => {
                   console.log("1 record inserted".gray);
                 });
               }
+              else {}
             }
             if (args[0] == 'list')
             {
@@ -904,6 +913,7 @@ client.on('message', async msg => {
                     console.log("1 record inserted".gray);
                   });
                 }
+                else {}
                 return;
                 }
                 if (args[0] == 'bassboost')
@@ -1010,6 +1020,7 @@ client.on('message', async msg => {
                     console.log("1 record inserted".gray);
                   });
                 }
+                else {}
                
               }
 
@@ -1121,6 +1132,7 @@ client.on('message', async msg => {
                     console.log("1 record inserted".gray);
                   });
                 }
+                else {}
 
               }
 
@@ -1128,9 +1140,15 @@ client.on('message', async msg => {
 
             
           }
-         else if (command == 'test')
+         else if (command == 'author')
          {
-          
+          var embed = new Discord.MessageEmbed()
+          .setTitle("Click to visit")
+          .setURL("https://cr3sh4.dev/")
+          .setAuthor(config.botname, "","https://cr3sh4.dev/")
+          .setColor('#00ccff')
+          .setDescription("To contact author or get source code \n visit cr3sh4.dev");
+            msg.channel.send(embed)
          }
          
 
