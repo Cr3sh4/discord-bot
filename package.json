@@ -7,6 +7,8 @@
     "@discordjs/opus": "^0.1.0",
     "axios": "^0.21.1",
     "discord-music-system": "^3.2.3",
+    "discord-player": "^3.2.1",
+    "discord-slash-commands-client": "^1.1.1",
     "discord-streaming": "^2.2.0",
     "discord.js": "^12.3.1",
     "discord.js-musicbot-addon": "^13.9.1",
@@ -18,11 +20,12 @@
     "prompt": "^1.0.0",
     "random-puppy": "^1.1.0",
     "request": "^2.88.2",
-    "ytdl-core": "^2.1.7"
+    "ytdl-core": "^4.4.1"
   },
   "devDependencies": {},
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node index.js",
+    "run": "node index.js"
   },
   "author": "Cr3sh4",
   "license": "ISC",

@@ -1,11 +1,12 @@
-const Botname = "mmhero bot";
-
 const Discord = require('discord.js');
 const mc = require('minecraft-server-util')
 const mysql = require('mysql');
 const request = require('request');
 const color = require('colors');
 const client = new Discord.Client();
+const { Player } = require("discord-player");
+const player = new Player(client);
+client.player = player;
 const fs = require('fs');
 
 require('os');
@@ -26,28 +27,33 @@ const { setTimeout } = require('timers');
 
 var con;
 
-//if (config.logs.enabled == true)
-//{
+if (config.logs.enabled == true)
+{
   var con = mysql.createConnection({
     host: config.logs.host,
     user: config.logs.user,
     password: config.logs.password,
     database: config.logs.database
   });
+}
+else if (config.logs.enabled == false)
+{
+  console.log("LOGS IS DISABLED".yellow);
+}
+else {
+  console.log("LOGS INIT ERROR".red);
+  return;
+}
+var looped = 0;
 
-//}
-//else {
-//  console.log("LOGS INIT ERROR".yellow);
-//}
 
 
-
+ 
 
 client.on('ready', () => {
   console.log(`Logged in as ${client.user.tag}!`.green);
   const Guilds = client.guilds.cache.map(guild => guild.id);
  //   console.log(Guilds);
-
 
 
 
@@ -61,20 +67,25 @@ process.stdin.setEncoding('utf8');
 
 
 
+
 });
 
-var sql = `INSERT INTO ${config.logs.table} (command) VALUES ('Ready')`;
-con.connect(function(err) {
-  if (err) throw err;
-  console.log("Connected to database!".gray);
- 
+if (config.logs.enabled == true)
+{
+  var sql = `INSERT INTO ${config.logs.table} (command) VALUES ('Ready')`;
+  con.connect(function(err) {
+    if (err) throw err;
+    console.log("Connected to database!".gray);
   
+    
 
-});
-con.query(sql, function (err, result) {
-  if (err) throw err;
-  console.log("1 record inserted");
-});
+  });
+  con.query(sql, function (err, result) {
+    if (err) throw err;
+    console.log("1 record inserted");
+  });
+}
+else
 
 
 
@@ -86,9 +97,6 @@ const updateMemberCount = guild => {
     const channel = client.channels.cache.get(AllMembersCount)
     channel.setName("📊All Members: " + client.users.cache.filter(client => !client.bot).size + "/750");
 };
-
-
-    
 
 client.on('guildMemberAdd', (member) => updateMemberCount(member.guild));
 client.on("guildMemberRemove", (member) => updateMemberCount(member.guild));
@@ -114,12 +122,6 @@ if (newMember.mute == true)
 //console.log("User id: " + newMember.member.user.tag + " state update");
 })
 
-
-
-
-
-
-
 client.voice.connections.find()
 
 
@@ -131,6 +133,8 @@ client.voice.connections.find()
 
 
   
+
+player.on('trackStart', (msg, track) => msg.channel.send(`Now playing ${track.title}...`))
 
 
 
@@ -153,11 +157,12 @@ const bot = new MusicBot({
 
 
 const commandlist = ["avatar @mention", "flip", "here", "join", "meme", "ping", "roll [min-max]", "tpto [channel id]", "uptime"];
-
+const effectlist = ['bassboost', '8D', 'vaporwave', 'nightcore', 'phaser', 'tremolo', 'vibrato', 'reverse', 'treble', 'normalizer', 'surrounding', 'pulsator', 'subboost', 'karaoke', 'flanger', 'gate', 'haas', 'mcompand'];
+player.options.leaveOnEmptyCooldown = config.music.channel_leave_cooldown;
+player.options.leaveOnEndCooldown = config.music.channel_leave_cooldown;
 
 
 client.on('message', async msg => {
-    
         var rand;
         
 
@@ -205,11 +210,15 @@ client.on('message', async msg => {
                   }
                   else 
                   {
+                    if (config.logs.enabled == true)
+                    {
                     var sql = `INSERT INTO ${config.logs.table} (guild_id, guild_name, channel_id, channel_name, user_id, user_name, command, args, full_message) VALUES (${msg.guild.id}, '${msg.guild.name}', ${msg.channel.id}, '${msg.channel.name}', ${msg.author.id}, '${msg.author.username}', '${command}', '${JSON.stringify(args)}', '${msg.content}')`;
                       con.query(sql, function (err, result) {
                         if (err) throw err;
                         console.log("1 record inserted".gray);
                       });
+                    }
+                    else
 
                   msg.channel.send(mention.avatarURL({ format: "png", dynamic: true })).then(msg => {
                     
@@ -274,12 +283,16 @@ client.on('message', async msg => {
                       try {
                         msg.guild.member(mention).ban(reason)
 
+                        if (config.logs.enabled == true)
+                        {
                         var sql = `INSERT INTO ${config.logs.table} (guild_id, guild_name, channel_id, channel_name, user_id, user_name, command, args, full_message) VALUES (${msg.guild.id}, '${msg.guild.name}', ${msg.channel.id}, '${msg.channel.name}', ${msg.author.id}, '${msg.author.username}', '${command}', '${JSON.stringify(args)}', '${msg.content}')`;
                         con.query(sql, function (err, result) {
                           if (err) throw err;
                           console.log("1 record inserted".gray);
                         });
-                        
+                      }
+                      else {}
+
                       }
                       catch {
                         msg.channel.send("Комманда не была выполнена :( Подробности в консоли");
@@ -302,12 +315,16 @@ client.on('message', async msg => {
                 msg.reply('Орёл');
                 console.log( msg.author.tag + ' ввёл команду FLIP в комнате ' + msg.channel.name + ' выпал ОРЁЛ');  
                 
-                var sql = `INSERT INTO ${config.logs.table} (guild_id, guild_name, channel_id, channel_name, user_id, user_name, command, args, full_message, bot_response) VALUES (${msg.guild.id}, '${msg.guild.name}', ${msg.channel.id}, '${msg.channel.name}', ${msg.author.id}, '${msg.author.username}', '${command}', '${JSON.stringify(args)}', '${msg.content}', 'Орёл')`;
-                con.query(sql, function (err, result) {
-                  if (err) throw err;
-                  console.log("1 record inserted".gray);
-                });
-    
+                if (config.logs.enabled == true)
+                {
+                  var sql = `INSERT INTO ${config.logs.table} (guild_id, guild_name, channel_id, channel_name, user_id, user_name, command, args, full_message, bot_response) VALUES (${msg.guild.id}, '${msg.guild.name}', ${msg.channel.id}, '${msg.channel.name}', ${msg.author.id}, '${msg.author.username}', '${command}', '${JSON.stringify(args)}', '${msg.content}', 'Орёл')`;
+                  con.query(sql, function (err, result) {
+                    if (err) throw err;
+                    console.log("1 record inserted".gray);
+                  });
+                }
+              else {}
+
             }
             if (randnum === 1) {
                 msg.reply('Решка').then(msg => {
@@ -317,11 +334,15 @@ client.on('message', async msg => {
                      .catch(console.error());
                 console.log( msg.author.tag + ' ввёл команду FLIP в комнате ' + msg.channel.name + ' выпала РЕШКА');
                
+                if (config.logs.enabled == true)
+                {
                 var sql = `INSERT INTO ${config.logs.table} (guild_id, guild_name, channel_id, channel_name, user_id, user_name, command, args, full_message, bot_response) VALUES (${msg.guild.id}, '${msg.guild.name}', ${msg.channel.id}, '${msg.channel.name}', ${msg.author.id}, '${msg.author.username}', '${command}', '${JSON.stringify(args)}', '${msg.content}', 'Решка')`;
                 con.query(sql, function (err, result) {
                   if (err) throw err;
                   console.log("1 record inserted".gray);
                 });
+                }
+                else{}
             }  
           }
           //command.here || command.tpall
@@ -339,23 +360,30 @@ client.on('message', async msg => {
                   });
                   console.log(msg.author.tag + " init command ~tpall " + msg.content);
 
-                  var sql = `INSERT INTO ${config.logs.table} (guild_id, guild_name, channel_id, channel_name, user_id, user_name, command, args, full_message) VALUES (${msg.guild.id}, '${msg.guild.name}', ${msg.channel.id}, '${msg.channel.name}', ${msg.author.id}, '${msg.author.username}', '${command}', '${JSON.stringify(args)}', '${msg.content}')`;
-                  con.query(sql, function (err, result) {
-                    if (err) throw err;
-                    console.log("1 record inserted".gray);
-                  });
-
+                  if (config.logs.enabled == true)
+                  {
+                    var sql = `INSERT INTO ${config.logs.table} (guild_id, guild_name, channel_id, channel_name, user_id, user_name, command, args, full_message) VALUES (${msg.guild.id}, '${msg.guild.name}', ${msg.channel.id}, '${msg.channel.name}', ${msg.author.id}, '${msg.author.username}', '${command}', '${JSON.stringify(args)}', '${msg.content}')`;
+                    con.query(sql, function (err, result) {
+                      if (err) throw err;
+                      console.log("1 record inserted".gray);
+                    });
+                  }
+                  else{}
           }
           //command.join
           else if (command === 'join') 
           {
                   msg.member.voice.channel.join();
                   console.log(msg.author.tag + " init command ~join");
-                  var sql = `INSERT INTO ${config.logs.table} (guild_id, guild_name, channel_id, channel_name, user_id, user_name, command, args, full_message) VALUES (${msg.guild.id}, '${msg.guild.name}', ${msg.channel.id}, '${msg.channel.name}', ${msg.author.id}, '${msg.author.username}', '${command}', '${JSON.stringify(args)}', '${msg.content}')`;
-                con.query(sql, function (err, result) {
-                  if (err) throw err;
-                  console.log("1 record inserted".gray);
-                });
+                  if (config.logs.enabled == true)
+                  {
+                      var sql = `INSERT INTO ${config.logs.table} (guild_id, guild_name, channel_id, channel_name, user_id, user_name, command, args, full_message) VALUES (${msg.guild.id}, '${msg.guild.name}', ${msg.channel.id}, '${msg.channel.name}', ${msg.author.id}, '${msg.author.username}', '${command}', '${JSON.stringify(args)}', '${msg.content}')`;
+                      con.query(sql, function (err, result) {
+                      if (err) throw err;
+                      console.log("1 record inserted".gray);
+                    });
+                  }
+              else {}
           }
           //command.kick
           else if (command === 'kick') 
@@ -416,11 +444,15 @@ client.on('message', async msg => {
                     //msg.channel.send(msg.author.tag + " kicked " + mention.username + " from server")
                     msg.channel.send(kick_embed);
 
-                    var sql = `INSERT INTO ${config.logs.table} (guild_id, guild_name, channel_id, channel_name, user_id, user_name, command, args, full_message) VALUES (${msg.guild.id}, '${msg.guild.name}', ${msg.channel.id}, '${msg.channel.name}', ${msg.author.id}, '${msg.author.username}', '${command}', '${JSON.stringify(args)}', '${msg.content}')`;
-                    con.query(sql, function (err, result) {
-                      if (err) throw err;
-                      console.log("1 record inserted".gray);
-                    });
+                    if (config.logs.enabled == true)
+                    {
+                      var sql = `INSERT INTO ${config.logs.table} (guild_id, guild_name, channel_id, channel_name, user_id, user_name, command, args, full_message) VALUES (${msg.guild.id}, '${msg.guild.name}', ${msg.channel.id}, '${msg.channel.name}', ${msg.author.id}, '${msg.author.username}', '${command}', '${JSON.stringify(args)}', '${msg.content}')`;
+                      con.query(sql, function (err, result) {
+                        if (err) throw err;
+                        console.log("1 record inserted".gray);
+                      });
+                    }
+                    else {}
 
                     //msg.delete();
                   } catch {
@@ -436,12 +468,15 @@ client.on('message', async msg => {
               try
               {
                 
-                var sql = `INSERT INTO ${config.logs.table} (guild_id, guild_name, channel_id, channel_name, user_id, user_name, command, args, full_message, bot_response) VALUES (${msg.guild.id}, '${msg.guild.name}', ${msg.channel.id}, '${msg.channel.name}', ${msg.author.id}, '${msg.author.username}', '${command}', '${JSON.stringify(args)}', '${msg.content}', pic.${random_meme})`;
-                con.query(sql, function (err, result) {
-                  if (err) throw err;
-                  console.log("1 record inserted".gray);
-                });
-                
+                if (config.logs.enabled == true)
+                {
+                    var sql = `INSERT INTO ${config.logs.table} (guild_id, guild_name, channel_id, channel_name, user_id, user_name, command, args, full_message, bot_response) VALUES (${msg.guild.id}, '${msg.guild.name}', ${msg.channel.id}, '${msg.channel.name}', ${msg.author.id}, '${msg.author.username}', '${command}', '${JSON.stringify(args)}', '${msg.content}', pic.${random_meme})`;
+                    con.query(sql, function (err, result) {
+                    if (err) throw err;
+                    console.log("1 record inserted".gray);
+                  });
+                }
+                else {}
                 msg.channel.send("pic." + random_meme + {files: [`${config.memes_dir}/meme (${random_meme}).jpg`]});
               }
               catch(err)
@@ -457,12 +492,15 @@ client.on('message', async msg => {
           { 
             var ping = Date.now() - msg.createdTimestamp + " ms";
 
-                var sql = `INSERT INTO ${config.logs.table} (guild_id, guild_name, channel_id, channel_name, user_id, user_name, command, args, full_message, bot_response) VALUES (${msg.guild.id}, '${msg.guild.name}', ${msg.channel.id}, '${msg.channel.name}', ${msg.author.id}, '${msg.author.username}', '${command}', '${JSON.stringify(args)}', '${msg.content}', 'Your ping is ${Date.now() - msg.createdTimestamp}')`;
-                con.query(sql, function (err, result) {
-                  if (err) throw err;
-                  console.log("1 record inserted".gray);
-                });
-
+                if (config.logs.enabled == true)
+                {
+                    var sql = `INSERT INTO ${config.logs.table} (guild_id, guild_name, channel_id, channel_name, user_id, user_name, command, args, full_message, bot_response) VALUES (${msg.guild.id}, '${msg.guild.name}', ${msg.channel.id}, '${msg.channel.name}', ${msg.author.id}, '${msg.author.username}', '${command}', '${JSON.stringify(args)}', '${msg.content}', 'Your ping is ${Date.now() - msg.createdTimestamp}')`;
+                    con.query(sql, function (err, result) {
+                    if (err) throw err;
+                    console.log("1 record inserted".gray);
+                  });
+                }
+              else {}
                   msg.channel.send("Your ping is `" + `${Date.now() - msg.createdTimestamp}` + "` ms");
           }
           //command.restart
@@ -475,12 +513,15 @@ client.on('message', async msg => {
                   client.destroy()
                   client.login(config.token);
 
-                  var sql = `INSERT INTO ${config.logs.table} (guild_id, guild_name, channel_id, channel_name, user_id, user_name, command, args, full_message) VALUES (${msg.guild.id}, '${msg.guild.name}', ${msg.channel.id}, '${msg.channel.name}', ${msg.author.id}, '${msg.author.username}', '${command}', '${JSON.stringify(args)}', '${msg.content}')`;
-                  con.query(sql, function (err, result) {
-                    if (err) throw err;
-                    console.log("1 record inserted".gray);
-                  });
-
+                  if (config.logs.enabled == true)
+                  {
+                      var sql = `INSERT INTO ${config.logs.table} (guild_id, guild_name, channel_id, channel_name, user_id, user_name, command, args, full_message) VALUES (${msg.guild.id}, '${msg.guild.name}', ${msg.channel.id}, '${msg.channel.name}', ${msg.author.id}, '${msg.author.username}', '${command}', '${JSON.stringify(args)}', '${msg.content}')`;
+                      con.query(sql, function (err, result) {
+                      if (err) throw err;
+                      console.log("1 record inserted".gray);
+                    });
+                  }
+                  else {}
                   msg.reply("Sucessfully restarted!".green);
                   console.log(msg.author.tag + " init bot restart!");
               }
@@ -502,12 +543,15 @@ client.on('message', async msg => {
                       var random_ = getRandomInt(100);
                       console.log(msg.author.tag + " roll: " + random_);
 
-                      var sql = `INSERT INTO ${config.logs.table} (guild_id, guild_name, channel_id, channel_name, user_id, user_name, command, args, full_message, bot_response) VALUES (${msg.guild.id}, '${msg.guild.name}', ${msg.channel.id}, '${msg.channel.name}', ${msg.author.id}, '${msg.author.username}', '${command}', '${JSON.stringify(args)}', '${msg.content}', '${random_}')`;
-                      con.query(sql, function (err, result) {
-                        if (err) throw err;
-                        console.log("1 record inserted".gray);
-                      });
-
+                      if (config.logs.enabled == true)
+                      {
+                          var sql = `INSERT INTO ${config.logs.table} (guild_id, guild_name, channel_id, channel_name, user_id, user_name, command, args, full_message, bot_response) VALUES (${msg.guild.id}, '${msg.guild.name}', ${msg.channel.id}, '${msg.channel.name}', ${msg.author.id}, '${msg.author.username}', '${command}', '${JSON.stringify(args)}', '${msg.content}', '${random_}')`;
+                          con.query(sql, function (err, result) {
+                          if (err) throw err;
+                          console.log("1 record inserted".gray);
+                        });
+                      }
+                      else {}
                       msg.reply(random_)
                         .then((msg) => {
                           msg.delete({ timeout: 10000 });
@@ -520,11 +564,15 @@ client.on('message', async msg => {
                       var userinput = args[0];
                       var random_ = getRandomInt(userinput);
                       console.log(msg.author.tag + " roll: " + random_);
-                      var sql = `INSERT INTO ${config.logs.table} (guild_id, guild_name, channel_id, channel_name, user_id, user_name, command, args, full_message, bot_response) VALUES (${msg.guild.id}, '${msg.guild.name}', ${msg.channel.id}, '${msg.channel.name}', ${msg.author.id}, '${msg.author.username}', '${command}', '${JSON.stringify(args)}', '${msg.content}', '${random_}')`;
-                      con.query(sql, function (err, result) {
-                        if (err) throw err;
-                        console.log("1 record inserted".gray);
-                      });
+                      if (config.logs.enabled == true)
+                      {
+                          var sql = `INSERT INTO ${config.logs.table} (guild_id, guild_name, channel_id, channel_name, user_id, user_name, command, args, full_message, bot_response) VALUES (${msg.guild.id}, '${msg.guild.name}', ${msg.channel.id}, '${msg.channel.name}', ${msg.author.id}, '${msg.author.username}', '${command}', '${JSON.stringify(args)}', '${msg.content}', '${random_}')`;
+                          con.query(sql, function (err, result) {
+                          if (err) throw err;
+                          console.log("1 record inserted".gray);
+                        });
+                      }
+                      else {}
                       msg.reply(random_)
                         .then((msg) => {
                           msg.delete({ timeout: 10000 });
@@ -533,8 +581,8 @@ client.on('message', async msg => {
                         .catch(console.error());
                     }
           }
-          //command.stop
-          else if (command === 'stop') 
+          //command.shutdown
+          else if (command === 'shutdown') 
           {
                 function ClientStop() {
                   console.log("User " + msg.author.tag + " stopped bot task!".red);
@@ -558,11 +606,15 @@ client.on('message', async msg => {
                       
                       
                     }); */
-                    var sql = `INSERT INTO ${config.logs.table} (command, bot_response) VALUES ('Shutdown', 'Stopped!')`;
-                      con.query(sql, function (err, result) {
+                    if (config.logs.enabled == true)
+                    {
+                        var sql = `INSERT INTO ${config.logs.table} (command, bot_response) VALUES ('Shutdown', 'Stopped!')`;
+                        con.query(sql, function (err, result) {
                         if (err) throw err;
                         console.log("1 record inserted".gray);
                       });
+                    }
+                    else {}
 
                       setTimeout(ClientStop, 2000);
                   
@@ -590,12 +642,15 @@ client.on('message', async msg => {
                           member.voice.setChannel(args[0])//Sets user to channel
                       }});
               // }
-              var sql = `INSERT INTO ${config.logs.table} (guild_id, guild_name, channel_id, channel_name, user_id, user_name, command, args, full_message) VALUES (${msg.guild.id}, '${msg.guild.name}', ${msg.channel.id}, '${msg.channel.name}', ${msg.author.id}, '${msg.author.username}', '${command}', '${JSON.stringify(args)}', '${msg.content}')`;
-              con.query(sql, function (err, result) {
+              if (config.logs.enabled == true)
+              {
+                var sql = `INSERT INTO ${config.logs.table} (guild_id, guild_name, channel_id, channel_name, user_id, user_name, command, args, full_message) VALUES (${msg.guild.id}, '${msg.guild.name}', ${msg.channel.id}, '${msg.channel.name}', ${msg.author.id}, '${msg.author.username}', '${command}', '${JSON.stringify(args)}', '${msg.content}')`;
+                con.query(sql, function (err, result) {
                 if (err) throw err;
                 console.log("1 record inserted".gray);
               });
-                      
+              }
+              else {}  
               }
             }
             else
@@ -632,13 +687,16 @@ client.on('message', async msg => {
                         return days + " Days"
                     }
                   }
-            
-                  var sql = `INSERT INTO ${config.logs.table} (guild_id, guild_name, channel_id, channel_name, user_id, user_name, command, args, full_message, bot_response) VALUES (${msg.guild.id}, '${msg.guild.name}', ${msg.channel.id}, '${msg.channel.name}', ${msg.author.id}, '${msg.author.username}', '${command}', '${JSON.stringify(args)}', '${msg.content}', 'Current uptime: ${msToTime(client.uptime)}')`;
-                  con.query(sql, function (err, result) {
-                    if (err) throw err;
-                    console.log("1 record inserted".gray);
-                  });
                   
+                  if (config.logs.enabled == true)
+                  {
+                      var sql = `INSERT INTO ${config.logs.table} (guild_id, guild_name, channel_id, channel_name, user_id, user_name, command, args, full_message, bot_response) VALUES (${msg.guild.id}, '${msg.guild.name}', ${msg.channel.id}, '${msg.channel.name}', ${msg.author.id}, '${msg.author.username}', '${command}', '${JSON.stringify(args)}', '${msg.content}', 'Current uptime: ${msToTime(client.uptime)}')`;
+                      con.query(sql, function (err, result) {
+                      if (err) throw err;
+                      console.log("1 record inserted".gray);
+                    });
+                  }
+                  else {}
             msg.channel.send("```c\nCurrent uptime: " + msToTime(client.uptime) + " \n```").then(msg => { 
                 msg.delete({ timeout: 10000});
             })
@@ -653,6 +711,430 @@ client.on('message', async msg => {
 
             console.log("end!");
           }
+          // command.p || command.play
+          else if (command == 'p' || command == 'play')
+          {
+            player.play(msg, args[0]);
+            if (config.logs.enabled == true)
+                  {
+                      var sql = `INSERT INTO ${config.logs.table} (guild_id, guild_name, channel_id, channel_name, user_id, user_name, command, args, full_message) VALUES (${msg.guild.id}, '${msg.guild.name}', ${msg.channel.id}, '${msg.channel.name}', ${msg.author.id}, '${msg.author.username}', '${command}', '${JSON.stringify(args)}', '${msg.content}')`;
+                      con.query(sql, function (err, result) {
+                      if (err) throw err;
+                      console.log("1 record inserted".gray);
+                    });
+                  }
+          }
+          // command.skip
+          else if (command == 'skip')
+          {
+            player.skip(msg);
+            if (config.logs.enabled == true)
+                  {
+                      var sql = `INSERT INTO ${config.logs.table} (guild_id, guild_name, channel_id, channel_name, user_id, user_name, command, args, full_message, bot_response) VALUES (${msg.guild.id}, '${msg.guild.name}', ${msg.channel.id}, '${msg.channel.name}', ${msg.author.id}, '${msg.author.username}', '${command}', '${JSON.stringify(args)}', '${msg.content}', 'Skipped!')`;
+                      con.query(sql, function (err, result) {
+                      if (err) throw err;
+                      console.log("1 record inserted".gray);
+                    });
+                  }
+          }
+          // command.repead || command.loop
+          else if (command == 'repeat' || command == "loop")
+          {
+            console.log(looped);
+            if (looped == 0)
+            {
+              player.setRepeatMode(msg, true);
+              looped = 1;
+              if (config.logs.enabled == true)
+              {
+                  var sql = `INSERT INTO ${config.logs.table} (guild_id, guild_name, channel_id, channel_name, user_id, user_name, command, args, full_message, bot_response) VALUES (${msg.guild.id}, '${msg.guild.name}', ${msg.channel.id}, '${msg.channel.name}', ${msg.author.id}, '${msg.author.username}', '${command}', '${JSON.stringify(args)}', '${msg.content}', 'Looped!')`;
+                  con.query(sql, function (err, result) {
+                  if (err) throw err;
+                  console.log("1 record inserted".gray);
+                });
+              }
+              msg.channel.send("Looped!").then((msg) => {
+                msg.delete({ timeout: 10000 });
+                return;
+              })
+              .catch(console.error());
+              return;
+            }
+            else
+            {
+              player.setRepeatMode(msg, false);
+              looped = 0;
+              if (config.logs.enabled == true)
+              {
+                  var sql = `INSERT INTO ${config.logs.table} (guild_id, guild_name, channel_id, channel_name, user_id, user_name, command, args, full_message, bot_response) VALUES (${msg.guild.id}, '${msg.guild.name}', ${msg.channel.id}, '${msg.channel.name}', ${msg.author.id}, '${msg.author.username}', '${command}', '${JSON.stringify(args)}', '${msg.content}', 'Loop is disabled')`;
+                  con.query(sql, function (err, result) {
+                  if (err) throw err;
+                  console.log("1 record inserted".gray);
+                });
+              }
+              msg.channel.send("Loop is disabled").then((msg) => {
+                msg.delete({ timeout: 10000 });
+                return;
+              })
+              .catch(console.error());
+              return;
+            }
+          }
+          else if (command == 'volume')
+          {
+            player.setVolume(msg, args[0]);
+            msg.channel.send("Volume change to: " + args[0]);
+            console.log("New volume: " + args[0]);
+            if (config.logs.enabled == true)
+              {
+                  var sql = `INSERT INTO ${config.logs.table} (guild_id, guild_name, channel_id, channel_name, user_id, user_name, command, args, full_message) VALUES (${msg.guild.id}, '${msg.guild.name}', ${msg.channel.id}, '${msg.channel.name}', ${msg.author.id}, '${msg.author.username}', '${command}', '${JSON.stringify(args)}', '${msg.content}')`;
+                  con.query(sql, function (err, result) {
+                  if (err) throw err;
+                  console.log("1 record inserted".gray);
+                });
+              }
+          }
+          else if (command == 'pause')
+          {
+            if (player.isPlaying(msg))
+            {
+            player.pause(msg);
+            msg.channel.send("Paused!");
+            if (config.logs.enabled == true)
+              {
+                  var sql = `INSERT INTO ${config.logs.table} (guild_id, guild_name, channel_id, channel_name, user_id, user_name, command, args, full_message, bot_response) VALUES (${msg.guild.id}, '${msg.guild.name}', ${msg.channel.id}, '${msg.channel.name}', ${msg.author.id}, '${msg.author.username}', '${command}', '${JSON.stringify(args)}', '${msg.content}', 'Paused!')`;
+                  con.query(sql, function (err, result) {
+                  if (err) throw err;
+                  console.log("1 record inserted".gray);
+                });
+              }
+            }
+            else {
+              msg.channel.send('No songs are currently playing');
+              if (config.logs.enabled == true)
+              {
+                  var sql = `INSERT INTO ${config.logs.table} (guild_id, guild_name, channel_id, channel_name, user_id, user_name, command, args, full_message, bot_response) VALUES (${msg.guild.id}, '${msg.guild.name}', ${msg.channel.id}, '${msg.channel.name}', ${msg.author.id}, '${msg.author.username}', '${command}', '${JSON.stringify(args)}', '${msg.content}', 'No songs are currently playing')`;
+                  con.query(sql, function (err, result) {
+                  if (err) throw err;
+                  console.log("1 record inserted".gray);
+                });
+              }
+            }
+            
+          }
+          else if (command == 'resume')
+          {
+            if (!player.nowPlaying)
+            {
+              msg.channel.send('Music already playing!');
+              if (config.logs.enabled == true)
+              {
+                  var sql = `INSERT INTO ${config.logs.table} (guild_id, guild_name, channel_id, channel_name, user_id, user_name, command, args, full_message, bot_response) VALUES (${msg.guild.id}, '${msg.guild.name}', ${msg.channel.id}, '${msg.channel.name}', ${msg.author.id}, '${msg.author.username}', '${command}', '${JSON.stringify(args)}', '${msg.content}', 'Music already playing!')`;
+                  con.query(sql, function (err, result) {
+                  if (err) throw err;
+                  console.log("1 record inserted".gray);
+                });
+              }
+            }
+            else
+            {
+              player.resume(msg);
+              if (config.logs.enabled == true)
+              {
+                  var sql = `INSERT INTO ${config.logs.table} (guild_id, guild_name, channel_id, channel_name, user_id, user_name, command, args, full_message) VALUES (${msg.guild.id}, '${msg.guild.name}', ${msg.channel.id}, '${msg.channel.name}', ${msg.author.id}, '${msg.author.username}', '${command}', '${JSON.stringify(args)}', '${msg.content}')`;
+                  con.query(sql, function (err, result) {
+                  if (err) throw err;
+                  console.log("1 record inserted".gray);
+                });
+              }
+            }
+          }
+          else if (command == 'leave')
+          {
+            msg.member.voice.channel.leave();
+            if (config.logs.enabled == true)
+            {
+                var sql = `INSERT INTO ${config.logs.table} (guild_id, guild_name, channel_id, channel_name, user_id, user_name, command, args, full_message) VALUES (${msg.guild.id}, '${msg.guild.name}', ${msg.channel.id}, '${msg.channel.name}', ${msg.author.id}, '${msg.author.username}', '${command}', '${JSON.stringify(args)}', '${msg.content}')`;
+                con.query(sql, function (err, result) {
+                if (err) throw err;
+                console.log("1 record inserted".gray);
+              });
+            }
+          }
+          else if (command == 'effect')
+          {
+            if (args[0] == undefined)
+            {
+              msg.channel.send("Usage: ~effect effectname enable/disable or on/off or 1/0. To watch all effects, write `~effect list`");
+              if (config.logs.enabled == true)
+              {
+                  var sql = `INSERT INTO ${config.logs.table} (guild_id, guild_name, channel_id, channel_name, user_id, user_name, command, args, full_message, bot_response) VALUES (${msg.guild.id}, '${msg.guild.name}', ${msg.channel.id}, '${msg.channel.name}', ${msg.author.id}, '${msg.author.username}', '${command}', '${JSON.stringify(args)}', '${msg.content}', 'Usage: ~effect effectname enable/disable or on/off or 1/0. To watch all effects, write ~effect list')`;
+                  con.query(sql, function (err, result) {
+                  if (err) throw err;
+                  console.log("1 record inserted".gray);
+                });
+              }
+            }
+            if (args[0] == 'list')
+            {
+              msg.channel.send("This is all available effects: `" + effectlist.toString() + "`");
+              if (config.logs.enabled == true)
+              {
+                  var sql = `INSERT INTO ${config.logs.table} (guild_id, guild_name, channel_id, channel_name, user_id, user_name, command, args, full_message, bot_response) VALUES (${msg.guild.id}, '${msg.guild.name}', ${msg.channel.id}, '${msg.channel.name}', ${msg.author.id}, '${msg.author.username}', '${command}', '${JSON.stringify(args)}', '${msg.content}', "This is all available effects: ` + effectlist.toString() + `")`;
+                  con.query(sql, function (err, result) {
+                  if (err) throw err;
+                  console.log("1 record inserted".gray);
+                });
+              }
+            }
+            console.log("effect init");
+            if (effectlist.includes(args[0]))
+            {
+              console.log("command: " + command + " args0: " + args[0] + " args1: " + args[1]);
+              if (args[1] == 'on' || args[1] == '1', args[1] == 'enable') //case dlya debilov (╯°□°）╯︵ ┻━┻
+              { 
+                if (!player.isPlaying)
+                {
+                msg.channel.send("Bot dont playing now any song");
+                if (config.logs.enabled == true)
+                {
+                    var sql = `INSERT INTO ${config.logs.table} (guild_id, guild_name, channel_id, channel_name, user_id, user_name, command, args, full_message, bot_response) VALUES (${msg.guild.id}, '${msg.guild.name}', ${msg.channel.id}, '${msg.channel.name}', ${msg.author.id}, '${msg.author.username}', '${command}', '${JSON.stringify(args)}', '${msg.content}', "Bot dont playing now any song")`;
+                    con.query(sql, function (err, result) {
+                    if (err) throw err;
+                    console.log("1 record inserted".gray);
+                  });
+                }
+                return;
+                }
+                if (args[0] == 'bassboost')
+                {
+                  player.setFilters(msg,{
+                    bassboost: true
+                  })
+                }
+                if (args[0] == '8D')
+                {
+                  player.setFilters(msg,{
+                    '8D': true
+                  })
+                }
+                if (args[0] == 'phaser')
+                {
+                  player.setFilters(msg,{
+                    phaser: true
+                  })
+                }
+                if (args[0] == 'tremolo')
+                {
+                  player.setFilters(msg,{
+                    tremolo: true
+                  })
+                }
+                if (args[0] == 'vibrato')
+                {
+                  player.setFilters(msg,{
+                    vibrato: true
+                  })
+                }
+                if (args[0] == 'reverse')
+                {
+                  player.setFilters(msg,{
+                    reverse: true
+                  })
+                }
+                if (args[0] == 'treble')
+                {
+                  player.setFilters(msg,{
+                    treble: true
+                  })
+                }
+                if (args[0] == 'normalizer')
+                {
+                  player.setFilters(msg,{
+                    normalizer: true
+                  })
+                }
+                if (args[0] == 'surrounding')
+                {
+                  player.setFilters(msg,{
+                    surrounding: true
+                  })
+                }
+                if (args[0] == 'pulsator')
+                {
+                  player.setFilters(msg,{
+                    pulsator: true
+                  })
+                }
+                if (args[0] == 'subboost')
+                {
+                  player.setFilters(msg,{
+                    subboost: true
+                  })
+                }
+                if (args[0] == 'karaoke')
+                {
+                  player.setFilters(msg,{
+                    karaoke: true
+                  })
+                }
+                if (args[0] == 'flanger')
+                {
+                  player.setFilters(msg,{
+                    flanger: true
+                  })
+                }
+                if (args[0] == 'gate')
+                {
+                  player.setFilters(msg,{
+                    gate: true
+                  })
+                }
+                if (args[0] == 'haas')
+                {
+                  player.setFilters(msg,{
+                    haas: true
+                  })
+                }
+                if (args[0] == 'mcompand')
+                {
+                  player.setFilters(msg,{
+                    mcompand: true
+                  })
+                }
+                if (config.logs.enabled == true)
+                {
+                    var sql = `INSERT INTO ${config.logs.table} (guild_id, guild_name, channel_id, channel_name, user_id, user_name, command, args, full_message) VALUES (${msg.guild.id}, '${msg.guild.name}', ${msg.channel.id}, '${msg.channel.name}', ${msg.author.id}, '${msg.author.username}', '${command}', '${JSON.stringify(args)}', '${msg.content}')`;
+                    con.query(sql, function (err, result) {
+                    if (err) throw err;
+                    console.log("1 record inserted".gray);
+                  });
+                }
+               
+              }
+
+              if (args[1] == 'off' || args[1] == '0', args[1] == 'disable')
+              {
+
+                if (args[0] == 'bassboost')
+                {
+                  player.setFilters(msg,{
+                    bassboost: false
+                  })
+                }
+                if (args[0] == '8D')
+                {
+                  player.setFilters(msg,{
+                    '8D': false
+                  })
+                }
+                if (args[0] == 'phaser')
+                {
+                  player.setFilters(msg,{
+                    phaser: false
+                  })
+                }
+                if (args[0] == 'tremolo')
+                {
+                  player.setFilters(msg,{
+                    tremolo: false
+                  })
+                }
+                if (args[0] == 'vibrato')
+                {
+                  player.setFilters(msg,{
+                    vibrato: false
+                  })
+                }
+                if (args[0] == 'reverse')
+                {
+                  player.setFilters(msg,{
+                    reverse: false
+                  })
+                }
+                if (args[0] == 'treble')
+                {
+                  player.setFilters(msg,{
+                    treble: false
+                  })
+                }
+                if (args[0] == 'normalizer')
+                {
+                  player.setFilters(msg,{
+                    normalizer: false
+                  })
+                }
+                if (args[0] == 'surrounding')
+                {
+                  player.setFilters(msg,{
+                    surrounding: false
+                  })
+                }
+                if (args[0] == 'pulsator')
+                {
+                  player.setFilters(msg,{
+                    pulsator: false
+                  })
+                }
+                if (args[0] == 'subboost')
+                {
+                  player.setFilters(msg,{
+                    subboost: false
+                  })
+                }
+                if (args[0] == 'karaoke')
+                {
+                  player.setFilters(msg,{
+                    karaoke: false
+                  })
+                }
+                if (args[0] == 'flanger')
+                {
+                  player.setFilters(msg,{
+                    flanger: false
+                  })
+                }
+                if (args[0] == 'gate')
+                {
+                  player.setFilters(msg,{
+                    gate: false
+                  })
+                }
+                if (args[0] == 'haas')
+                {
+                  player.setFilters(msg,{
+                    haas: false
+                  })
+                }
+                if (args[0] == 'mcompand')
+                {
+                  player.setFilters(msg,{
+                    mcompand: false
+                  })
+                }
+
+                if (config.logs.enabled == true)
+                {
+                    var sql = `INSERT INTO ${config.logs.table} (guild_id, guild_name, channel_id, channel_name, user_id, user_name, command, args, full_message) VALUES (${msg.guild.id}, '${msg.guild.name}', ${msg.channel.id}, '${msg.channel.name}', ${msg.author.id}, '${msg.author.username}', '${command}', '${JSON.stringify(args)}', '${msg.content}')`;
+                    con.query(sql, function (err, result) {
+                    if (err) throw err;
+                    console.log("1 record inserted".gray);
+                  });
+                }
+
+              }
+
+            }
+
+            
+          }
+         else if (command == 'test')
+         {
+          
+         }
+         
+
+          
 
 
         
@@ -954,7 +1436,7 @@ client.on('message', async msg => {
 
 //give Cr3sh4 splash_potion 1 16398 {CustomPotionEffects:[{Id:5,Amplifier:2,Duration:2400},{Id:10,Amplifier:3,Duration:600},{Id:11,Amplifier:2,Duration:2400},{Id:22,Amplifier:3,Duration:3600},{Id:25,Amplifier:2,Duration:200},{Id:9,Amplifier:1,Duration:3600},{Id:19,Amplifier:1,Duration:30}],display:{Name:"\"Red Bull\"",Lore:["\"Stolen from Wallmart\""]}}
 //give Cr3sh4 splash_potion 1 16398 {CustomPotionEffects:[{Id:5,Amplifier:2,Duration:2400},{Id:10,Amplifier:3,Duration:600},{Id:11,Amplifier:2,Duration:2400},{Id:22,Amplifier:3,Duration:3600},{Id:1,Amplifier:1,Duration:10000},{Id:3,Amplifier:2,Duration:10000},{Id:25,Amplifier:2,Duration:60}],display:{Name:"\"Red Bull\"",Lore:["\"Stolen from Auchan\""]}}
-        
+        // 
         /*
 
   if (ChatMsg.startsWith("~kick")) {
