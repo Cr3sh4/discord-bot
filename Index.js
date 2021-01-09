@@ -93,10 +93,7 @@ var AllMembersCount = "752539273034465291";
 
 var BoostersCount = "751876552110899231";
 
-const updateMemberCount = guild => {
-    const channel = client.channels.cache.get(AllMembersCount)
-    channel.setName("📊All Members: " + client.users.cache.filter(client => !client.bot).size + "/750");
-};
+
 
 client.on('guildMemberAdd', (member) => updateMemberCount(member.guild));
 client.on("guildMemberRemove", (member) => updateMemberCount(member.guild));
