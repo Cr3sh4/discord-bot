@@ -95,29 +95,7 @@ var BoostersCount = "751876552110899231";
 
 
 
-client.on('guildMemberAdd', (member) => updateMemberCount(member.guild));
-client.on("guildMemberRemove", (member) => updateMemberCount(member.guild));
-client.on('voiceStateUpdate', (oldMember, newMember) => {
-    var VoiceOnlineCount = "754009450171334768";
-    var setVoiceChannelName = client.channels.cache.get(VoiceOnlineCount);
- const voiceChannels = client.channels.cache.filter(c => c.type === 'voice');
- var CountInVoiceChannels = 0;
 
- for (const [id, voiceChannel] of voiceChannels) CountInVoiceChannels += voiceChannel.members.size;
-
- setVoiceChannelName.setName("📈Voice Online: " + CountInVoiceChannels);  
- 
-if (newMember.id == '294122131074318337' || newMember.id == '252431644684713985')
-{
-if (newMember.mute == true)
-
-{
-    newMember.setMute(false);
-}}
-
-
-//console.log("User id: " + newMember.member.user.tag + " state update");
-})
 
 client.voice.connections.find()
 
