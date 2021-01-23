@@ -4,15 +4,16 @@ const mysql = require('mysql');
 const request = require('request');
 const color = require('colors');
 const client = new Discord.Client();
-const { Player } = require("discord-player");
-const player = new Player(client);
-client.player = player;
 const fs = require('fs');
+
+
+
 
 require('os');
 
 const config = require('./config.json');
 const { setTimeout } = require('timers');
+const { error } = require('console');
 
 
 
@@ -85,47 +86,45 @@ if (config.logs.enabled == true)
     console.log("1 record inserted");
   });
 }
-else
+else {}
 
 
 
-var AllMembersCount = "752539273034465291";
+client.on('error', () => {
 
-var BoostersCount = "751876552110899231";
-
-
-
-
-
-client.voice.connections.find()
-
-
-
-
-
-
-
-
-
+      try 
+      {
+        console.error('Bot crashed. Crashlog saved in : NULL' );
+        client.login(config.token);
+        client.log("Sucessfuly restarted!".green);
+      } 
+      catch (error) 
+      {
+        console.error("Error while restarting bot");
+        console.log(error);
+        return;
+      }
   
-
-player.on('trackStart', (msg, track) => msg.channel.send(`Now playing ${track.title}...`))
-
-
-
-
-
-
-/*
-//AIzaSyD_yvZEZQOkEMxxEg-3e7U5exBYv1UZzyI
-const bot = new MusicBot({
-  botPrefix: '~', // Example: !
-  ytApiKey: 'AIzaSyCcVLEpsJC9z95Err0qIJ_wqwZGLkQgOKQ', // Video to explain how to get it: https://www.youtube.com/watch?v=VqML5F8hcRQ
-  botClient: client // Your Discord client. Here we're using discord.js so it's the Discord.Client()
 });
 
 
-*/
+
+
+
+client.on('disconnect', () => {
+  console.log("AAAAAAA");
+});
+
+  
+
+
+
+
+
+
+
+
+
 
 
 
@@ -133,8 +132,7 @@ const bot = new MusicBot({
 
 const commandlist = ["avatar @mention", "flip", "here", "join", "meme", "ping", "roll [min-max]", "tpto [channel id]", "uptime"];
 const effectlist = ['bassboost', '8D', 'vaporwave', 'nightcore', 'phaser', 'tremolo', 'vibrato', 'reverse', 'treble', 'normalizer', 'surrounding', 'pulsator', 'subboost', 'karaoke', 'flanger', 'gate', 'haas', 'mcompand'];
-player.options.leaveOnEmptyCooldown = config.music.channel_leave_cooldown;
-player.options.leaveOnEndCooldown = config.music.channel_leave_cooldown;
+
 
 
 client.on('message', async msg => {
@@ -149,8 +147,6 @@ client.on('message', async msg => {
         let mention = msg.mentions.users.first();
         var AllMembersCount = "752539273034465291";var VoiceOnlineCount = "754009450171334768";var BoostersCount = "751876552110899231";
         const regex = /(https?:\/\/)?(www\.)?(discord\.(gg|io|me|li|club)|discordapp\.com\/invite|discord\.com\/invite)\/.+[a-z]/gi;
-        const ServerBoost = client.channels.cache.get(BoostersCount);
-        ServerBoost.setName("🚀Boost Count: " + msg.guild.premiumSubscriptionCount + "/30");
         const VoiceOnline = client.channels.cache.get(VoiceOnlineCount);
         if (msg.author.bot || !msg.content.startsWith(config.prefix)) return;
         let ChatMsg = msg.content.toLowerCase();
@@ -597,7 +593,7 @@ client.on('message', async msg => {
               }
           }
           //command.tpto
-          else if (command === 'tpto') 
+          else if (command == 'tpto' || command == 'here') 
           {
                 let userchannel = msg.member.voice.channel;
         
@@ -679,158 +675,34 @@ client.on('message', async msg => {
               msg.delete();
               console.log(msg.author.tag + " init command ~uptime " + msg.content);
           }
-          else if (command == 'alo' && msg.author.id == config.ownerID)
-          {
-            //console.log(`${msg.guild.id}', '${msg.guild.name}', '${msg.channel.id}', '${msg.channel.name}', '${msg.author.id}', '${msg.author.username}', '${command}', '${args}', '${msg.content}`);
-           
-
-            console.log("end!");
-          }
           // command.p || command.play
           else if (command == 'p' || command == 'play')
           {
-            player.play(msg, args[0]);
-            if (config.logs.enabled == true)
-                  {
-                      var sql = `INSERT INTO ${config.logs.table} (guild_id, guild_name, channel_id, channel_name, user_id, user_name, command, args, full_message) VALUES (${msg.guild.id}, '${msg.guild.name}', ${msg.channel.id}, '${msg.channel.name}', ${msg.author.id}, '${msg.author.username}', '${command}', '${JSON.stringify(args)}', '${msg.content}')`;
-                      con.query(sql, function (err, result) {
-                      if (err) throw err;
-                      console.log("1 record inserted".gray);
-                    });
-                  }
+           return;
           }
           // command.skip
           else if (command == 'skip')
           {
-            player.skip(msg);
-            if (config.logs.enabled == true)
-                  {
-                      var sql = `INSERT INTO ${config.logs.table} (guild_id, guild_name, channel_id, channel_name, user_id, user_name, command, args, full_message, bot_response) VALUES (${msg.guild.id}, '${msg.guild.name}', ${msg.channel.id}, '${msg.channel.name}', ${msg.author.id}, '${msg.author.username}', '${command}', '${JSON.stringify(args)}', '${msg.content}', 'Skipped!')`;
-                      con.query(sql, function (err, result) {
-                      if (err) throw err;
-                      console.log("1 record inserted".gray);
-                    });
-                  }
+            return;
           }
           // command.repead || command.loop
           else if (command == 'repeat' || command == "loop")
           {
-            console.log(looped);
-            if (looped == 0)
-            {
-              player.setRepeatMode(msg, true);
-              looped = 1;
-              if (config.logs.enabled == true)
-              {
-                  var sql = `INSERT INTO ${config.logs.table} (guild_id, guild_name, channel_id, channel_name, user_id, user_name, command, args, full_message, bot_response) VALUES (${msg.guild.id}, '${msg.guild.name}', ${msg.channel.id}, '${msg.channel.name}', ${msg.author.id}, '${msg.author.username}', '${command}', '${JSON.stringify(args)}', '${msg.content}', 'Looped!')`;
-                  con.query(sql, function (err, result) {
-                  if (err) throw err;
-                  console.log("1 record inserted".gray);
-                });
-              }
-              else {}
-              msg.channel.send("Looped!").then((msg) => {
-                msg.delete({ timeout: 10000 });
-                return;
-              })
-              .catch(console.error());
-              return;
-            }
-            else
-            {
-              player.setRepeatMode(msg, false);
-              looped = 0;
-              if (config.logs.enabled == true)
-              {
-                  var sql = `INSERT INTO ${config.logs.table} (guild_id, guild_name, channel_id, channel_name, user_id, user_name, command, args, full_message, bot_response) VALUES (${msg.guild.id}, '${msg.guild.name}', ${msg.channel.id}, '${msg.channel.name}', ${msg.author.id}, '${msg.author.username}', '${command}', '${JSON.stringify(args)}', '${msg.content}', 'Loop is disabled')`;
-                  con.query(sql, function (err, result) {
-                  if (err) throw err;
-                  console.log("1 record inserted".gray);
-                });
-              }
-              else {}
-              msg.channel.send("Loop is disabled").then((msg) => {
-                msg.delete({ timeout: 10000 });
-                return;
-              })
-              .catch(console.error());
-              return;
-            }
+            return;
           }
           else if (command == 'volume')
           {
-            player.setVolume(msg, args[0]);
-            msg.channel.send("Volume change to: " + args[0]);
-            console.log("New volume: " + args[0]);
-            if (config.logs.enabled == true)
-              {
-                  var sql = `INSERT INTO ${config.logs.table} (guild_id, guild_name, channel_id, channel_name, user_id, user_name, command, args, full_message) VALUES (${msg.guild.id}, '${msg.guild.name}', ${msg.channel.id}, '${msg.channel.name}', ${msg.author.id}, '${msg.author.username}', '${command}', '${JSON.stringify(args)}', '${msg.content}')`;
-                  con.query(sql, function (err, result) {
-                  if (err) throw err;
-                  console.log("1 record inserted".gray);
-                });
-              }
-              else {}
+            return;
           }
           else if (command == 'pause')
           {
-            if (player.isPlaying(msg))
-            {
-            player.pause(msg);
-            msg.channel.send("Paused!");
-            if (config.logs.enabled == true)
-              {
-                  var sql = `INSERT INTO ${config.logs.table} (guild_id, guild_name, channel_id, channel_name, user_id, user_name, command, args, full_message, bot_response) VALUES (${msg.guild.id}, '${msg.guild.name}', ${msg.channel.id}, '${msg.channel.name}', ${msg.author.id}, '${msg.author.username}', '${command}', '${JSON.stringify(args)}', '${msg.content}', 'Paused!')`;
-                  con.query(sql, function (err, result) {
-                  if (err) throw err;
-                  console.log("1 record inserted".gray);
-                });
-              }
-              else {}
-            }
-            else {
-              msg.channel.send('No songs are currently playing');
-              if (config.logs.enabled == true)
-              {
-                  var sql = `INSERT INTO ${config.logs.table} (guild_id, guild_name, channel_id, channel_name, user_id, user_name, command, args, full_message, bot_response) VALUES (${msg.guild.id}, '${msg.guild.name}', ${msg.channel.id}, '${msg.channel.name}', ${msg.author.id}, '${msg.author.username}', '${command}', '${JSON.stringify(args)}', '${msg.content}', 'No songs are currently playing')`;
-                  con.query(sql, function (err, result) {
-                  if (err) throw err;
-                  console.log("1 record inserted".gray);
-                });
-              }
-              else {}
-            }
-            
+            return;
           }
           else if (command == 'resume')
           {
-            if (!player.nowPlaying)
-            {
-              msg.channel.send('Music already playing!');
-              if (config.logs.enabled == true)
-              {
-                  var sql = `INSERT INTO ${config.logs.table} (guild_id, guild_name, channel_id, channel_name, user_id, user_name, command, args, full_message, bot_response) VALUES (${msg.guild.id}, '${msg.guild.name}', ${msg.channel.id}, '${msg.channel.name}', ${msg.author.id}, '${msg.author.username}', '${command}', '${JSON.stringify(args)}', '${msg.content}', 'Music already playing!')`;
-                  con.query(sql, function (err, result) {
-                  if (err) throw err;
-                  console.log("1 record inserted".gray);
-                });
-              }
-              else {}
-            }
-            else
-            {
-              player.resume(msg);
-              if (config.logs.enabled == true)
-              {
-                  var sql = `INSERT INTO ${config.logs.table} (guild_id, guild_name, channel_id, channel_name, user_id, user_name, command, args, full_message) VALUES (${msg.guild.id}, '${msg.guild.name}', ${msg.channel.id}, '${msg.channel.name}', ${msg.author.id}, '${msg.author.username}', '${command}', '${JSON.stringify(args)}', '${msg.content}')`;
-                  con.query(sql, function (err, result) {
-                  if (err) throw err;
-                  console.log("1 record inserted".gray);
-                });
-              }
-              else {}
-            }
+            return;
           }
+          //command.leave
           else if (command == 'leave')
           {
             msg.member.voice.channel.leave();
@@ -844,277 +716,8 @@ client.on('message', async msg => {
             }
             else {}
           }
-          else if (command == 'effect')
-          {
-            if (args[0] == undefined)
-            {
-              msg.channel.send("Usage: ~effect effectname enable/disable or on/off or 1/0. To watch all effects, write `~effect list`");
-              if (config.logs.enabled == true)
-              {
-                  var sql = `INSERT INTO ${config.logs.table} (guild_id, guild_name, channel_id, channel_name, user_id, user_name, command, args, full_message, bot_response) VALUES (${msg.guild.id}, '${msg.guild.name}', ${msg.channel.id}, '${msg.channel.name}', ${msg.author.id}, '${msg.author.username}', '${command}', '${JSON.stringify(args)}', '${msg.content}', 'Usage: ~effect effectname enable/disable or on/off or 1/0. To watch all effects, write ~effect list')`;
-                  con.query(sql, function (err, result) {
-                  if (err) throw err;
-                  console.log("1 record inserted".gray);
-                });
-              }
-              else {}
-            }
-            if (args[0] == 'list')
-            {
-              msg.channel.send("This is all available effects: `" + effectlist.toString() + "`");
-              if (config.logs.enabled == true)
-              {
-                  var sql = `INSERT INTO ${config.logs.table} (guild_id, guild_name, channel_id, channel_name, user_id, user_name, command, args, full_message, bot_response) VALUES (${msg.guild.id}, '${msg.guild.name}', ${msg.channel.id}, '${msg.channel.name}', ${msg.author.id}, '${msg.author.username}', '${command}', '${JSON.stringify(args)}', '${msg.content}', "This is all available effects: ` + effectlist.toString() + `")`;
-                  con.query(sql, function (err, result) {
-                  if (err) throw err;
-                  console.log("1 record inserted".gray);
-                });
-              }
-            }
-            console.log("effect init");
-            if (effectlist.includes(args[0]))
-            {
-              console.log("command: " + command + " args0: " + args[0] + " args1: " + args[1]);
-              if (args[1] == 'on' || args[1] == '1', args[1] == 'enable') //case dlya debilov (╯°□°）╯︵ ┻━┻
-              { 
-                if (!player.isPlaying)
-                {
-                msg.channel.send("Bot dont playing now any song");
-                if (config.logs.enabled == true)
-                {
-                    var sql = `INSERT INTO ${config.logs.table} (guild_id, guild_name, channel_id, channel_name, user_id, user_name, command, args, full_message, bot_response) VALUES (${msg.guild.id}, '${msg.guild.name}', ${msg.channel.id}, '${msg.channel.name}', ${msg.author.id}, '${msg.author.username}', '${command}', '${JSON.stringify(args)}', '${msg.content}', "Bot dont playing now any song")`;
-                    con.query(sql, function (err, result) {
-                    if (err) throw err;
-                    console.log("1 record inserted".gray);
-                  });
-                }
-                else {}
-                return;
-                }
-                if (args[0] == 'bassboost')
-                {
-                  player.setFilters(msg,{
-                    bassboost: true
-                  })
-                }
-                if (args[0] == '8D')
-                {
-                  player.setFilters(msg,{
-                    '8D': true
-                  })
-                }
-                if (args[0] == 'phaser')
-                {
-                  player.setFilters(msg,{
-                    phaser: true
-                  })
-                }
-                if (args[0] == 'tremolo')
-                {
-                  player.setFilters(msg,{
-                    tremolo: true
-                  })
-                }
-                if (args[0] == 'vibrato')
-                {
-                  player.setFilters(msg,{
-                    vibrato: true
-                  })
-                }
-                if (args[0] == 'reverse')
-                {
-                  player.setFilters(msg,{
-                    reverse: true
-                  })
-                }
-                if (args[0] == 'treble')
-                {
-                  player.setFilters(msg,{
-                    treble: true
-                  })
-                }
-                if (args[0] == 'normalizer')
-                {
-                  player.setFilters(msg,{
-                    normalizer: true
-                  })
-                }
-                if (args[0] == 'surrounding')
-                {
-                  player.setFilters(msg,{
-                    surrounding: true
-                  })
-                }
-                if (args[0] == 'pulsator')
-                {
-                  player.setFilters(msg,{
-                    pulsator: true
-                  })
-                }
-                if (args[0] == 'subboost')
-                {
-                  player.setFilters(msg,{
-                    subboost: true
-                  })
-                }
-                if (args[0] == 'karaoke')
-                {
-                  player.setFilters(msg,{
-                    karaoke: true
-                  })
-                }
-                if (args[0] == 'flanger')
-                {
-                  player.setFilters(msg,{
-                    flanger: true
-                  })
-                }
-                if (args[0] == 'gate')
-                {
-                  player.setFilters(msg,{
-                    gate: true
-                  })
-                }
-                if (args[0] == 'haas')
-                {
-                  player.setFilters(msg,{
-                    haas: true
-                  })
-                }
-                if (args[0] == 'mcompand')
-                {
-                  player.setFilters(msg,{
-                    mcompand: true
-                  })
-                }
-                if (config.logs.enabled == true)
-                {
-                    var sql = `INSERT INTO ${config.logs.table} (guild_id, guild_name, channel_id, channel_name, user_id, user_name, command, args, full_message) VALUES (${msg.guild.id}, '${msg.guild.name}', ${msg.channel.id}, '${msg.channel.name}', ${msg.author.id}, '${msg.author.username}', '${command}', '${JSON.stringify(args)}', '${msg.content}')`;
-                    con.query(sql, function (err, result) {
-                    if (err) throw err;
-                    console.log("1 record inserted".gray);
-                  });
-                }
-                else {}
-               
-              }
-
-              if (args[1] == 'off' || args[1] == '0', args[1] == 'disable')
-              {
-
-                if (args[0] == 'bassboost')
-                {
-                  player.setFilters(msg,{
-                    bassboost: false
-                  })
-                }
-                if (args[0] == '8D')
-                {
-                  player.setFilters(msg,{
-                    '8D': false
-                  })
-                }
-                if (args[0] == 'phaser')
-                {
-                  player.setFilters(msg,{
-                    phaser: false
-                  })
-                }
-                if (args[0] == 'tremolo')
-                {
-                  player.setFilters(msg,{
-                    tremolo: false
-                  })
-                }
-                if (args[0] == 'vibrato')
-                {
-                  player.setFilters(msg,{
-                    vibrato: false
-                  })
-                }
-                if (args[0] == 'reverse')
-                {
-                  player.setFilters(msg,{
-                    reverse: false
-                  })
-                }
-                if (args[0] == 'treble')
-                {
-                  player.setFilters(msg,{
-                    treble: false
-                  })
-                }
-                if (args[0] == 'normalizer')
-                {
-                  player.setFilters(msg,{
-                    normalizer: false
-                  })
-                }
-                if (args[0] == 'surrounding')
-                {
-                  player.setFilters(msg,{
-                    surrounding: false
-                  })
-                }
-                if (args[0] == 'pulsator')
-                {
-                  player.setFilters(msg,{
-                    pulsator: false
-                  })
-                }
-                if (args[0] == 'subboost')
-                {
-                  player.setFilters(msg,{
-                    subboost: false
-                  })
-                }
-                if (args[0] == 'karaoke')
-                {
-                  player.setFilters(msg,{
-                    karaoke: false
-                  })
-                }
-                if (args[0] == 'flanger')
-                {
-                  player.setFilters(msg,{
-                    flanger: false
-                  })
-                }
-                if (args[0] == 'gate')
-                {
-                  player.setFilters(msg,{
-                    gate: false
-                  })
-                }
-                if (args[0] == 'haas')
-                {
-                  player.setFilters(msg,{
-                    haas: false
-                  })
-                }
-                if (args[0] == 'mcompand')
-                {
-                  player.setFilters(msg,{
-                    mcompand: false
-                  })
-                }
-
-                if (config.logs.enabled == true)
-                {
-                    var sql = `INSERT INTO ${config.logs.table} (guild_id, guild_name, channel_id, channel_name, user_id, user_name, command, args, full_message) VALUES (${msg.guild.id}, '${msg.guild.name}', ${msg.channel.id}, '${msg.channel.name}', ${msg.author.id}, '${msg.author.username}', '${command}', '${JSON.stringify(args)}', '${msg.content}')`;
-                    con.query(sql, function (err, result) {
-                    if (err) throw err;
-                    console.log("1 record inserted".gray);
-                  });
-                }
-                else {}
-
-              }
-
-            }
-
-            
-          }
+         
+          //command.autor
          else if (command == 'author')
          {
           var embed = new Discord.MessageEmbed()
@@ -1125,6 +728,20 @@ client.on('message', async msg => {
           .setDescription("To contact author or get source code \n visit cr3sh4.dev");
             msg.channel.send(embed)
          }
+         else if (command == "hi")
+         {
+          console.log("args[0]: " + args[0]);
+          console.log("args[1]: " + args[1]);
+          console.log("args[2]: " + args[2]);
+          console.log("args[3]: " + args[3]);
+          if (args[0] == '1' || args[1] == '2')
+          {
+            console.log("yes");
+            console.log('args[0]' + args[0]);
+            console.log('args[1]' + args[1]);
+          }
+         }
+         
          
 
           
