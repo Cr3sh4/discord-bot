@@ -1,11 +1,12 @@
 {
     "ownerID": "294122131074318337",
     "botID": "650822178056699944",
-    "token": "NjUwODIyMTc4MDU2Njk5OTQ0.XeQ7Yg.WwBXFM7k33j7rchbDd2MIZBpyRw",
+    "token": "",
     "memes_dir": "./memes",
     "prefix": "~",
     "botname": "JMA",
-    "status": "cr3sh4.dev",
+    "status": "usage: ~command",
+    "crashlog_file": "C:/code",
     "logs": {
         "enabled": 0,
         "host": "localhost",
@@ -18,5 +19,4 @@
     "music": {
         "channel_leave_cooldown": 30000
     }
-
 }

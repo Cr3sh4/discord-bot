@@ -14,6 +14,7 @@ require('os');
 const config = require('./config.json');
 const { setTimeout } = require('timers');
 const { error } = require('console');
+const { green } = require('ffmpeg-static');
 
 
 
@@ -54,7 +55,7 @@ var looped = 0;
 client.on('ready', () => {
   console.log(`Logged in as ${client.user.tag}!`.green);
   const Guilds = client.guilds.cache.map(guild => guild.id);
- //   console.log(Guilds);
+  console.log("Working on servers: " + Guilds);
 
 
 
@@ -95,8 +96,6 @@ client.on('error', () => {
       try 
       {
         console.error('Bot crashed. Crashlog saved in : NULL' );
-        client.login(config.token);
-        client.log("Sucessfuly restarted!".green);
       } 
       catch (error) 
       {
@@ -740,6 +739,16 @@ client.on('message', async msg => {
             console.log('args[0]' + args[0]);
             console.log('args[1]' + args[1]);
           }
+         }
+         if (command == 'iq')
+         {
+           const iq = Math.floor(Math.random() * 100) + 1;
+           var embed = new Discord.MessageEmbed()
+            .setColor(green)
+            .setTitle('IQ Test')
+            .setDescription(`Your IQ is: ${iq}`);
+            console.log(iq);
+            msg.channel.send(embed);
          }
          
          
