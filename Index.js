@@ -15,6 +15,24 @@ const config = require('./config.json');
 const { setTimeout } = require('timers');
 const { error } = require('console');
 const { green } = require('ffmpeg-static');
+const demotivator = require('./modules/demotivator')
+
+
+
+
+
+
+if (config.language == 'russian')
+{
+  const language = require('./language/russian');
+}
+else if (config.language == 'english')
+{
+  const language = require('./language/english');
+}
+else {
+  const language = require('./language/russian');
+}
 
 
 
@@ -40,10 +58,10 @@ if (config.logs.enabled == true)
 }
 else if (config.logs.enabled == false)
 {
-  console.log("LOGS IS DISABLED".yellow);
+  console.log($logs_disabled.yellow);
 }
 else {
-  console.log("LOGS INIT ERROR".red);
+  console.log($logs_init_error.red);
   return;
 }
 var looped = 0;
@@ -53,9 +71,9 @@ var looped = 0;
  
 
 client.on('ready', () => {
-  console.log(`Logged in as ${client.user.tag}!`.green);
+  console.log( $logged_in_as + `${client.user.tag}!`.green);
   const Guilds = client.guilds.cache.map(guild => guild.id);
-  console.log("Working on servers: " + Guilds);
+  console.log($servers_cache + Guilds);
 
 
 
@@ -77,34 +95,20 @@ if (config.logs.enabled == true)
   var sql = `INSERT INTO ${config.logs.table} (command) VALUES ('Ready')`;
   con.connect(function(err) {
     if (err) throw err;
-    console.log("Connected to database!".gray);
+    console.log($database_connected_sucessfuly.gray);
   
     
 
   });
   con.query(sql, function (err, result) {
     if (err) throw err;
-    console.log("1 record inserted");
+    console.log($db_record_inserted);
   });
 }
 else {}
 
 
 
-client.on('error', () => {
-
-      try 
-      {
-        console.error('Bot crashed. Crashlog saved in : NULL' );
-      } 
-      catch (error) 
-      {
-        console.error("Error while restarting bot");
-        console.log(error);
-        return;
-      }
-  
-});
 
 
 
@@ -150,6 +154,19 @@ client.on('message', async msg => {
         if (msg.author.bot || !msg.content.startsWith(config.prefix)) return;
         let ChatMsg = msg.content.toLowerCase();
 
+
+        
+function database_record_no_response(msg, command, args) {
+  if (config.logs.enabled == true)
+                    {
+                    var sql = `INSERT INTO ${config.logs.table} (guild_id, guild_name, channel_id, channel_name, user_id, user_name, command, args, full_message) VALUES (${msg.guild.id}, '${msg.guild.name}', ${msg.channel.id}, '${msg.channel.name}', ${msg.author.id}, '${msg.author.username}', '${command}', '${JSON.stringify(args)}', '${msg.content}')`;
+                      con.query(sql, function (err, result) {
+                        if (err) throw err;
+                        console.log($db_record_inserted.gray);
+                      });
+                    }
+}
+
         
         /*
         CREATE TABLE `jma_db`.`table_name` 
@@ -171,7 +188,7 @@ client.on('message', async msg => {
         //command.avatar
         if (command === 'avatar') {
                   if (!mention) {
-                    msg.channel.send("Using: ~avatar + @user").then(msg => {
+                    msg.channel.send($avatar_howtouse).then(msg => {
                             msg.delete({ timeout: 10000});
                             return;
                         })
@@ -180,15 +197,8 @@ client.on('message', async msg => {
                   }
                   else 
                   {
-                    if (config.logs.enabled == true)
-                    {
-                    var sql = `INSERT INTO ${config.logs.table} (guild_id, guild_name, channel_id, channel_name, user_id, user_name, command, args, full_message) VALUES (${msg.guild.id}, '${msg.guild.name}', ${msg.channel.id}, '${msg.channel.name}', ${msg.author.id}, '${msg.author.username}', '${command}', '${JSON.stringify(args)}', '${msg.content}')`;
-                      con.query(sql, function (err, result) {
-                        if (err) throw err;
-                        console.log("1 record inserted".gray);
-                      });
-                    }
-                    else {}
+                    database_record_no_response(msg, command, args);
+                    
 
                   msg.channel.send(mention.avatarURL({ format: "png", dynamic: true })).then(msg => {
                     
@@ -196,13 +206,13 @@ client.on('message', async msg => {
                             msg.delete({ timeout: 60000});
                         })
                               .catch(console.error());
-                  console.log(msg.author.tag + " init command " + msg.content);
+                  console.log(msg.author.tag + command_init + msg.content);
                   }
     
         }
         //command.ban 
         else if (command === 'ban') {
-                            if (!msg.member.hasPermission("BAN_MEMBERS")) return;
+                      if (!msg.member.hasPermission("BAN_MEMBERS")) return;
                       
                       if (mention == null) {
                         msg.delete();
@@ -211,7 +221,7 @@ client.on('message', async msg => {
                         console.log("User: " + mention);
                         console.log("Reason: " + reason);
                         msg.channel
-                          .send("Пользователь не указан!")
+                          .send(user_undefiend)
                           .then((msg) => {
                             msg.delete({ timeout: 10000 });
                           })
@@ -219,16 +229,16 @@ client.on('message', async msg => {
                         return;
                       }
                       // if (msg.guild.member(mention).hasPermission("ADMINISTRATOR")) return;
-                      if (msg.guild.member(mention).client.user.id == "294122131074318337")
+                      if (msg.guild.member(mention).client.user.id == config.ownerID)
                         return;
                       if (!msg.guild.member(mention).bannable) {
-                        msg.channel.send("`Этого пользователя невозможно забанить`");
+                        msg.channel.send(unbannable_user);
                         return;
                       }
                       let reason = msg.content.slice(mention.toString().length + 6);
-                      console.log(msg.author.tag + " init command ~ban " + msg.content);
+                      console.log(msg.author.tag + command_init + ' ~ban ' + msg.content);
                       if (reason == "") {
-                        reason = "Причина не указана";
+                        reason = reason_null;
                       }
 
                       let ban_embed = new Discord.MessageEmbed()
@@ -236,11 +246,11 @@ client.on('message', async msg => {
                         .setTitle("Enterprise Squad")
                         .setThumbnail(mention.avatarURL())
                         .addField(
-                          "Пользователь: ",
+                          $username,
                           `${mention.username + "#" + mention.discriminator}`
                         )
-                        .addField("Забанен модератором: ", `${msg.author.tag}`)
-                        .addField("По причине:", `${reason}`, true)
+                        .addField($banned_by, `${msg.author.tag}`)
+                        .addField($ban_reason, `${reason}`, true)
                         // .addField("Забанен до %%", '2', true)
                         .setFooter(
                           "Enterprise Squad",
@@ -253,19 +263,13 @@ client.on('message', async msg => {
                       try {
                         msg.guild.member(mention).ban(reason)
 
-                        if (config.logs.enabled == true)
-                        {
-                        var sql = `INSERT INTO ${config.logs.table} (guild_id, guild_name, channel_id, channel_name, user_id, user_name, command, args, full_message) VALUES (${msg.guild.id}, '${msg.guild.name}', ${msg.channel.id}, '${msg.channel.name}', ${msg.author.id}, '${msg.author.username}', '${command}', '${JSON.stringify(args)}', '${msg.content}')`;
-                        con.query(sql, function (err, result) {
-                          if (err) throw err;
-                          console.log("1 record inserted".gray);
-                        });
-                      }
-                      else {}
+                        database_record_no_response(msg, command, args);
+                      
 
                       }
                       catch {
-                        msg.channel.send("Комманда не была выполнена :( Подробности в консоли");
+                        msg.channel.send($command_run_error);
+                        console.error();
                         return;
                       }
                       
@@ -282,7 +286,7 @@ client.on('message', async msg => {
 
        
             if (randnum === 0) {
-                msg.reply('Орёл');
+                msg.reply($tails);
                 console.log( msg.author.tag + ' ввёл команду FLIP в комнате ' + msg.channel.name + ' выпал ОРЁЛ');  
                 
                 if (config.logs.enabled == true)
@@ -290,14 +294,14 @@ client.on('message', async msg => {
                   var sql = `INSERT INTO ${config.logs.table} (guild_id, guild_name, channel_id, channel_name, user_id, user_name, command, args, full_message, bot_response) VALUES (${msg.guild.id}, '${msg.guild.name}', ${msg.channel.id}, '${msg.channel.name}', ${msg.author.id}, '${msg.author.username}', '${command}', '${JSON.stringify(args)}', '${msg.content}', 'Орёл')`;
                   con.query(sql, function (err, result) {
                     if (err) throw err;
-                    console.log("1 record inserted".gray);
+                    console.log($db_record_inserted.gray);
                   });
                 }
-              else {}
+              
 
             }
             if (randnum === 1) {
-                msg.reply('Решка').then(msg => {
+                msg.reply($heads).then(msg => {
                   msg.delete({ timeout: 10000});
                     return;
               })
@@ -309,7 +313,7 @@ client.on('message', async msg => {
                 var sql = `INSERT INTO ${config.logs.table} (guild_id, guild_name, channel_id, channel_name, user_id, user_name, command, args, full_message, bot_response) VALUES (${msg.guild.id}, '${msg.guild.name}', ${msg.channel.id}, '${msg.channel.name}', ${msg.author.id}, '${msg.author.username}', '${command}', '${JSON.stringify(args)}', '${msg.content}', 'Решка')`;
                 con.query(sql, function (err, result) {
                   if (err) throw err;
-                  console.log("1 record inserted".gray);
+                  console.log($db_record_inserted.gray);
                 });
                 }
                 else{}
@@ -321,39 +325,22 @@ client.on('message', async msg => {
 
                   msg.guild.members.cache.forEach((member) => {
                     if (
-                      member.voice.channel &&
-                      msg.member.permissions.has("MOVE_MEMBERS")
-                    ) {
+                      member.voice.channel && msg.member.permissions.has("MOVE_MEMBERS")) {
                       var channelid = msg.member.voice.channel.id;
                       member.voice.setChannel(channelid);
                     }
                   });
                   console.log(msg.author.tag + " init command ~tpall " + msg.content);
 
-                  if (config.logs.enabled == true)
-                  {
-                    var sql = `INSERT INTO ${config.logs.table} (guild_id, guild_name, channel_id, channel_name, user_id, user_name, command, args, full_message) VALUES (${msg.guild.id}, '${msg.guild.name}', ${msg.channel.id}, '${msg.channel.name}', ${msg.author.id}, '${msg.author.username}', '${command}', '${JSON.stringify(args)}', '${msg.content}')`;
-                    con.query(sql, function (err, result) {
-                      if (err) throw err;
-                      console.log("1 record inserted".gray);
-                    });
-                  }
-                  else{}
+                  
+                  database_record_no_response(msg, command, args);
           }
           //command.join
           else if (command === 'join') 
           {
                   msg.member.voice.channel.join();
                   console.log(msg.author.tag + " init command ~join");
-                  if (config.logs.enabled == true)
-                  {
-                      var sql = `INSERT INTO ${config.logs.table} (guild_id, guild_name, channel_id, channel_name, user_id, user_name, command, args, full_message) VALUES (${msg.guild.id}, '${msg.guild.name}', ${msg.channel.id}, '${msg.channel.name}', ${msg.author.id}, '${msg.author.username}', '${command}', '${JSON.stringify(args)}', '${msg.content}')`;
-                      con.query(sql, function (err, result) {
-                      if (err) throw err;
-                      console.log("1 record inserted".gray);
-                    });
-                  }
-              else {}
+                  database_record_no_response(msg, command, args);
           }
           //command.kick
           else if (command === 'kick') 
@@ -361,7 +348,7 @@ client.on('message', async msg => {
                   if (!msg.member.hasPermission("KICK_MEMBERS")) {
                     msg.delete();
                     msg.channel
-                      .send("У вас нет прав для использования данной комманды!")
+                      .send($dont_have_permissions)
                       .then((msg) => {
                         msg.delete({ timeout: 10000 });
                       })
@@ -371,7 +358,7 @@ client.on('message', async msg => {
                   if (mention == null) {
                     msg.delete();
                     msg.channel
-                      .send("Пользователь не указан!")
+                      .send($user_undefiend)
                       .then((msg) => {
                         msg.delete({ timeout: 10000 });
                       })
@@ -379,27 +366,27 @@ client.on('message', async msg => {
                     return;
                   }
                   // if (msg.guild.member(mention).hasPermission("ADMINISTRATOR")) return;
-                  if (msg.guild.member(mention).client.user.id == "294122131074318337")
+                  if (msg.guild.member(mention).client.user.id == config.ownerID)
                     return;
                   if (!msg.guild.member(mention).kickable) {
-                    msg.channel.send("`Этого пользователя невозможно кикнуть`");
+                    msg.channel.send($unkickable_user);
                     return;
                   }
                   let reason = msg.content.slice(mention.toString.length + 29);
                   if (reason == "") {
-                    reason = "Причина не указана";
+                    reason = $reason_null;
                   }
-                  console.log(mention + " забанен по причине: " + reason);
+                  console.log(mention + $kick_reason + reason);
                   let kick_embed = new Discord.MessageEmbed()
                     .setColor("#ff121e")
                     .setTitle("Enterprise Squad")
                     .setThumbnail(mention.avatarURL())
                     .addField(
-                      "Пользователь: ",
+                      $username,
                       `${mention.username + "#" + mention.discriminator}`
                     )
-                    .addField("Кикнут модератором: ", `${msg.author.tag}`)
-                    .addField("По причине:", `${reason}`, true)
+                    .addField($kicked_by, `${msg.author.tag}`)
+                    .addField($_reason, `${reason}`, true)
                     // .addField("Забанен до %%", '2', true)
                     .setFooter(
                       "Enterprise Squad",
@@ -414,19 +401,11 @@ client.on('message', async msg => {
                     //msg.channel.send(msg.author.tag + " kicked " + mention.username + " from server")
                     msg.channel.send(kick_embed);
 
-                    if (config.logs.enabled == true)
-                    {
-                      var sql = `INSERT INTO ${config.logs.table} (guild_id, guild_name, channel_id, channel_name, user_id, user_name, command, args, full_message) VALUES (${msg.guild.id}, '${msg.guild.name}', ${msg.channel.id}, '${msg.channel.name}', ${msg.author.id}, '${msg.author.username}', '${command}', '${JSON.stringify(args)}', '${msg.content}')`;
-                      con.query(sql, function (err, result) {
-                        if (err) throw err;
-                        console.log("1 record inserted".gray);
-                      });
-                    }
-                    else {}
+                    database_record_no_response(msg, command, args);
 
                     //msg.delete();
                   } catch {
-                    msg.channel.send("`Ошибка, подробности в консоли...`" + console.error());
+                    msg.channel.send($error_wath_console + console.error());
                   }
           }
           //command.meme
@@ -471,7 +450,7 @@ client.on('message', async msg => {
                   });
                 }
               else {}
-                  msg.channel.send("Your ping is `" + `${Date.now() - msg.createdTimestamp}` + "` ms");
+                  msg.channel.send($ping + `${Date.now() - msg.createdTimestamp}` + "` ms");
           }
           //command.restart
           else if (command === 'restart') 
@@ -483,16 +462,8 @@ client.on('message', async msg => {
                   client.destroy()
                   client.login(config.token);
 
-                  if (config.logs.enabled == true)
-                  {
-                      var sql = `INSERT INTO ${config.logs.table} (guild_id, guild_name, channel_id, channel_name, user_id, user_name, command, args, full_message) VALUES (${msg.guild.id}, '${msg.guild.name}', ${msg.channel.id}, '${msg.channel.name}', ${msg.author.id}, '${msg.author.username}', '${command}', '${JSON.stringify(args)}', '${msg.content}')`;
-                      con.query(sql, function (err, result) {
-                      if (err) throw err;
-                      console.log("1 record inserted".gray);
-                    });
-                  }
-                  else {}
-                  msg.reply("Sucessfully restarted!".green);
+                  database_record_no_response(msg, command, args);
+                  msg.reply($restart_sucessfuly.green);
                   console.log(msg.author.tag + " init bot restart!");
               }
               catch 
@@ -562,7 +533,7 @@ client.on('message', async msg => {
               if (msg.author.id == config.ownerID || msg.author.id == '252431644684713985')
               {
                 
-                  msg.reply("Stopped!").then(msg => {
+                  msg.reply($shutdown_send_text).then(msg => {
                       msg.delete({ timeout: 1000});
                   })
                         .catch(console.error());
@@ -585,7 +556,6 @@ client.on('message', async msg => {
                       });
                     }
                     else {}
-
                       setTimeout(ClientStop, 2000);
                   
                   
@@ -612,15 +582,7 @@ client.on('message', async msg => {
                           member.voice.setChannel(args[0])//Sets user to channel
                       }});
               // }
-              if (config.logs.enabled == true)
-              {
-                var sql = `INSERT INTO ${config.logs.table} (guild_id, guild_name, channel_id, channel_name, user_id, user_name, command, args, full_message) VALUES (${msg.guild.id}, '${msg.guild.name}', ${msg.channel.id}, '${msg.channel.name}', ${msg.author.id}, '${msg.author.username}', '${command}', '${JSON.stringify(args)}', '${msg.content}')`;
-                con.query(sql, function (err, result) {
-                if (err) throw err;
-                console.log("1 record inserted".gray);
-              });
-              }
-              else {}  
+              database_record_no_response(msg, command, args);
               }
             }
             else
@@ -648,13 +610,13 @@ client.on('message', async msg => {
                     var days = (millisec / (1000 * 60 * 60 * 24)).toFixed(1);
             
                     if (secs < 60) {
-                        return secs + " Sec";
+                        return secs + $seconds;
                     } else if (mins < 60) {
-                        return mins + " Min";
+                        return mins + $minutes;
                     } else if (hors < 24) {
-                        return hors + " Hrs";
+                        return hors + $hours;
                     } else {
-                        return days + " Days"
+                        return days + $days
                     }
                   }
                   
@@ -667,7 +629,7 @@ client.on('message', async msg => {
                     });
                   }
                   else {}
-            msg.channel.send("```c\nCurrent uptime: " + msToTime(client.uptime) + " \n```").then(msg => { 
+            msg.channel.send("```c\n`" + $current_uptime +"` " + msToTime(client.uptime) + " \n```").then(msg => { 
                 msg.delete({ timeout: 10000});
             })
                   .catch(console.error());
@@ -705,15 +667,7 @@ client.on('message', async msg => {
           else if (command == 'leave')
           {
             msg.member.voice.channel.leave();
-            if (config.logs.enabled == true)
-            {
-                var sql = `INSERT INTO ${config.logs.table} (guild_id, guild_name, channel_id, channel_name, user_id, user_name, command, args, full_message) VALUES (${msg.guild.id}, '${msg.guild.name}', ${msg.channel.id}, '${msg.channel.name}', ${msg.author.id}, '${msg.author.username}', '${command}', '${JSON.stringify(args)}', '${msg.content}')`;
-                con.query(sql, function (err, result) {
-                if (err) throw err;
-                console.log("1 record inserted".gray);
-              });
-            }
-            else {}
+            database_record_no_response(msg, command, args);
           }
          
           //command.autor
@@ -742,13 +696,34 @@ client.on('message', async msg => {
          }
          if (command == 'iq')
          {
+           try {
            const iq = Math.floor(Math.random() * 100) + 1;
            var embed = new Discord.MessageEmbed()
             .setColor(green)
             .setTitle('IQ Test')
             .setDescription(`Your IQ is: ${iq}`);
-            console.log(iq);
+            console.log(msg.author.username + " IQ " + iq);  
             msg.channel.send(embed);
+           }
+           catch {}
+         }
+         if (command == "dem")
+         {
+           
+             console.log(data[1]);
+          //Coppied from https://github.com/zispidd/discord_demotivator_bot | Thx dude 
+          const data = args.join(' ').split(',')
+        if (!data[0] || !data[1]) {
+          return msg.channel.send('Please use "," when writing your text')
+        }
+        const attach = new Discord.MessageAttachment(msg.attachments.first().attachment) || null
+        if (!attach) {
+          return msg.channel.send('Your not attachment image..')
+        }
+        const image = await demotivator(attach, data[0], data[1])
+        msg.channel.send({
+        files: [image]
+        })
          }
          
          
